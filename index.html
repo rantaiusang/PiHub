@@ -1,1 +1,1653 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PiHub — Secure Pi Escrow Marketplace</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+tailwind.config={theme:{extend:{colors:{navy:{950:'#040810',900:'#060b18',800:'#0a1628',700:'#0f1f38',600:'#162d50'},electric:'#00d4ff',cyan:'#00f0ff',pi:'#f5a623',neon:'#00ff88'},fontFamily:{heading:['Space Grotesk','sans-serif'],body:['Inter','sans-serif']}}}}
+</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;scrollbar-width:thin;scrollbar-color:#0f1f38 transparent}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#0f1f38;border-radius:3px}
+body{font-family:'Inter',sans-serif;background:#060b18;color:#e8edf5;overflow-x:hidden;min-height:100vh}
 
+/* Glass effect */
+.glass{background:rgba(15,31,56,0.4);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(0,212,255,0.08)}
+.glass-strong{background:rgba(15,31,56,0.7);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border:1px solid rgba(0,212,255,0.12)}
+.glass-card{background:rgba(15,31,56,0.35);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(0,212,255,0.06);transition:all .3s cubic-bezier(.4,0,.2,1)}
+.glass-card:hover{background:rgba(15,31,56,0.55);border-color:rgba(0,212,255,0.18);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,212,255,0.08)}
+
+/* Neon glow */
+.glow{box-shadow:0 0 20px rgba(0,212,255,0.15),0 0 60px rgba(0,212,255,0.05)}
+.glow-text{text-shadow:0 0 20px rgba(0,212,255,0.5)}
+.glow-border{border:1px solid rgba(0,212,255,0.3);box-shadow:0 0 15px rgba(0,212,255,0.1),inset 0 0 15px rgba(0,212,255,0.02)}
+.glow-btn{background:linear-gradient(135deg,#00d4ff,#0088cc);color:#fff;font-weight:600;transition:all .3s;box-shadow:0 4px 20px rgba(0,212,255,0.25)}
+.glow-btn:hover{box-shadow:0 4px 30px rgba(0,212,255,0.45);transform:translateY(-1px)}
+.glow-btn:active{transform:translateY(0)}
+.glow-btn-sm{background:linear-gradient(135deg,#00d4ff,#0088cc);color:#fff;font-weight:500;padding:6px 16px;border-radius:8px;font-size:13px;transition:all .3s;box-shadow:0 2px 12px rgba(0,212,255,0.2)}
+.glow-btn-sm:hover{box-shadow:0 2px 20px rgba(0,212,255,0.4)}
+
+/* Animated gradient border */
+.gradient-border{position:relative;background:rgba(10,22,40,0.8);border-radius:16px;overflow:hidden}
+.gradient-border::before{content:'';position:absolute;inset:-2px;background:conic-gradient(from 0deg,#00d4ff,#6366f1,#00d4ff);border-radius:17px;z-index:-1;animation:rotateBorder 4s linear infinite}
+@keyframes rotateBorder{to{filter:hue-rotate(360deg)}}
+
+/* Particle canvas */
+#particles{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+
+/* Floating animation */
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes floatSlow{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.float{animation:float 6s ease-in-out infinite}
+.float-slow{animation:floatSlow 8s ease-in-out infinite}
+.float-delay{animation:float 6s ease-in-out infinite 2s}
+
+/* Pulse glow */
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 20px rgba(0,212,255,0.15)}50%{box-shadow:0 0 40px rgba(0,212,255,0.3)}}
+.pulse-glow{animation:pulseGlow 3s ease-in-out infinite}
+
+/* Slide in */
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.slide-up{animation:slideUp .6s cubic-bezier(.4,0,.2,1) forwards;opacity:0}
+.slide-in{animation:slideIn .5s cubic-bezier(.4,0,.2,1) forwards;opacity:0}
+.fade-in{animation:fadeIn .4s ease forwards;opacity:0}
+
+/* Status colors */
+.status-hold{color:#fbbf24;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2)}
+.status-shipped{color:#60a5fa;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.2)}
+.status-completed{color:#34d399;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.2)}
+.status-disputed{color:#f87171;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.2)}
+.status-released{color:#34d399;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.2)}
+
+/* Timeline */
+.timeline-step{position:relative}
+.timeline-step::after{content:'';position:absolute;top:28px;left:50%;width:2px;height:calc(100% - 8px);background:rgba(0,212,255,0.15);transform:translateX(-50%)}
+.timeline-step:last-child::after{display:none}
+.timeline-step.active::after{background:linear-gradient(to bottom,#00d4ff,rgba(0,212,255,0.15))}
+
+/* Toast */
+.toast{position:fixed;top:20px;right:20px;z-index:9999;padding:14px 20px;border-radius:12px;font-size:14px;font-weight:500;animation:slideInRight .4s ease;max-width:360px}
+@keyframes slideInRight{from{opacity:0;transform:translateX(80px)}to{opacity:1;transform:translateX(0)}}
+.toast-success{background:rgba(52,211,153,0.15);border:1px solid rgba(52,211,153,0.3);color:#34d399}
+.toast-error{background:rgba(248,113,113,0.15);border:1px solid rgba(248,113,113,0.3);color:#f87171}
+.toast-info{background:rgba(0,212,255,0.15);border:1px solid rgba(0,212,255,0.3);color:#00d4ff}
+
+/* Modal overlay */
+.modal-overlay{position:fixed;inset:0;z-index:1000;background:rgba(4,8,16,0.8);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;animation:fadeIn .2s ease}
+
+/* Sidebar */
+.sidebar{width:260px;min-height:100vh;transition:transform .3s cubic-bezier(.4,0,.2,1)}
+@media(max-width:1023px){.sidebar{position:fixed;left:0;top:0;z-index:100;transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}}
+
+/* Skeleton loading */
+.skeleton{background:linear-gradient(90deg,rgba(15,31,56,0.4) 25%,rgba(15,31,56,0.7) 50%,rgba(15,31,56,0.4) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* Page transitions */
+.page{display:none;opacity:0}
+.page.active{display:block;animation:fadeIn .35s ease forwards}
+
+/* Stat counter */
+.stat-num{font-family:'Space Grotesk',sans-serif;font-weight:700}
+
+/* Badge */
+.badge-trust{background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(99,102,241,0.2));border:1px solid rgba(0,212,255,0.2);color:#00d4ff}
+
+/* Bottom nav */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:rgba(6,11,24,0.95);backdrop-filter:blur(20px);border-top:1px solid rgba(0,212,255,0.08);padding:6px 0 env(safe-area-inset-bottom)}
+@media(min-width:1024px){.bottom-nav{display:none}}
+
+/* Rating stars */
+.star{color:#2a3a52}.star.filled{color:#fbbf24}
+
+/* Custom scrollbar for horizontal scroll */
+.no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
+
+/* Chart container */
+.chart-container{position:relative;height:220px}
+
+/* Neon underline */
+.neon-underline{position:relative}
+.neon-underline::after{content:'';position:absolute;bottom:-4px;left:0;width:40px;height:2px;background:linear-gradient(90deg,#00d4ff,transparent);border-radius:2px}
+
+/* Escrow process step icon */
+.step-icon{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .3s}
+
+@media(prefers-reduced-motion:reduce){*{animation-duration:0.01ms !important;transition-duration:0.01ms !important}}
+</style>
+</head>
+<body>
+
+<!-- Particle Background -->
+<canvas id="particles"></canvas>
+
+<!-- Sidebar Navigation -->
+<aside id="sidebar" class="sidebar glass-strong fixed left-0 top-0 z-50 flex flex-col">
+  <div class="p-5 border-b border-white/5">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-electric to-cyan flex items-center justify-center">
+        <i class="fas fa-shield-halved text-white text-sm"></i>
+      </div>
+      <span class="font-heading font-bold text-lg text-white tracking-tight">PiHub</span>
+      <button id="sidebar-close" class="ml-auto lg:hidden text-gray-400 hover:text-white"><i class="fas fa-xmark"></i></button>
+    </div>
+  </div>
+
+  <nav class="flex-1 p-3 space-y-1 overflow-y-auto" id="sidebar-nav">
+    <a href="#" data-page="dashboard" data-role="all" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all text-gray-400 hover:text-white hover:bg-white/5">
+      <i class="fas fa-chart-line w-5 text-center"></i><span>Dashboard</span>
+    </a>
+    <a href="#" data-page="marketplace" data-role="all" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all text-gray-400 hover:text-white hover:bg-white/5">
+      <i class="fas fa-store w-5 text-center"></i><span>Marketplace</span>
+    </a>
+    <a href="#" data-page="create-escrow" data-role="all" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all text-gray-400 hover:text-white hover:bg-white/5">
+      <i class="fas fa-file-invoice w-5 text-center"></i><span>Create Escrow</span>
+    </a>
+    <a href="#" data-page="escrow-detail" data-role="all" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all text-gray-400 hover:text-white hover:bg-white/5">
+      <i class="fas fa-clock-rotate-left w-5 text-center"></i><span>My Escrows</span>
+    </a>
+    <a href="#" data-page="disputes" data-role="all" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all text-gray-400 hover:text-white hover:bg-white/5">
+      <i class="fas fa-gavel w-5 text-center"></i><span>Disputes</span>
+    </a>
+    <a href="#" data-page="profile" data-role="all" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all text-gray-400 hover:text-white hover:bg-white/5">
+      <i class="fas fa-user-circle w-5 text-center"></i><span>Profile</span>
+    </a>
+    <div class="pt-3 mt-3 border-t border-white/5" id="admin-nav" style="display:none">
+      <p class="px-4 text-[10px] uppercase tracking-widest text-gray-500 mb-2 font-semibold">Admin</p>
+      <a href="#" data-page="admin" data-role="admin" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all text-gray-400 hover:text-white hover:bg-white/5">
+        <i class="fas fa-shield w-5 text-center"></i><span>Admin Panel</span>
+      </a>
+    </div>
+  </nav>
+
+  <div class="p-4 border-t border-white/5">
+    <div class="flex items-center gap-3 px-2">
+      <div class="w-9 h-9 rounded-full bg-gradient-to-br from-electric/30 to-purple-500/30 flex items-center justify-center text-sm font-bold text-electric" id="sidebar-avatar">P</div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-medium text-white truncate" id="sidebar-username">pioneer_user</p>
+        <p class="text-[11px] text-gray-500">Verified Pioneer</p>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- Main Content -->
+<main id="main-content" class="lg:ml-[260px] min-h-screen pb-20 lg:pb-0 relative z-10">
+
+  <!-- Top Bar -->
+  <header id="topbar" class="sticky top-0 z-40 glass-strong border-b border-white/5" style="display:none">
+    <div class="flex items-center justify-between px-4 lg:px-6 h-14">
+      <div class="flex items-center gap-3">
+        <button id="menu-toggle" class="lg:hidden text-gray-400 hover:text-white p-1"><i class="fas fa-bars text-lg"></i></button>
+        <h2 class="font-heading font-semibold text-white text-sm lg:text-base" id="page-title">Dashboard</h2>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 text-xs">
+          <i class="fas fa-wallet text-electric"></i>
+          <span class="text-gray-300" id="topbar-balance">3,247.85 π</span>
+        </div>
+        <button class="relative p-2 text-gray-400 hover:text-white transition" id="notif-btn">
+          <i class="fas fa-bell"></i>
+          <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500"></span>
+        </button>
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-electric/30 to-purple-500/30 flex items-center justify-center text-xs font-bold text-electric cursor-pointer" id="topbar-avatar" onclick="navigateTo('profile')">P</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== LANDING PAGE ==================== -->
+  <section id="page-landing" class="page active">
+    <div class="relative overflow-hidden">
+      <!-- Hero -->
+      <div class="min-h-screen flex flex-col">
+        <nav class="flex items-center justify-between px-6 py-4 relative z-10">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-electric to-cyan flex items-center justify-center">
+              <i class="fas fa-shield-halved text-white text-sm"></i>
+            </div>
+            <span class="font-heading font-bold text-xl text-white">PiHub</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <button onclick="navigateTo('login')" class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition">Sign In</button>
+            <button onclick="navigateTo('login')" class="glow-btn px-5 py-2 rounded-xl text-sm">Get Started</button>
+          </div>
+        </nav>
+
+        <div class="flex-1 flex items-center justify-center px-6 pb-20">
+          <div class="text-center max-w-4xl mx-auto">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-electric/10 border border-electric/20 text-electric text-xs font-medium mb-8 slide-up">
+              <span class="w-1.5 h-1.5 rounded-full bg-electric animate-pulse"></span>
+              Built for Pi Network
+            </div>
+            <h1 class="font-heading text-5xl sm:text-6xl lg:text-7xl font-bold text-white leading-[1.08] mb-6 slide-up" style="animation-delay:.1s">
+              Secure Pi<br>
+              <span class="bg-gradient-to-r from-electric via-cyan to-purple-400 bg-clip-text text-transparent">Transactions</span>
+            </h1>
+            <p class="text-gray-400 text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed slide-up" style="animation-delay:.2s">
+              The trusted escrow marketplace for Pi Network. Buy and sell with confidence through our secure, transparent, and decentralized transaction protocol.
+            </p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 slide-up" style="animation-delay:.3s">
+              <button onclick="navigateTo('login')" class="glow-btn px-8 py-3.5 rounded-2xl text-base w-full sm:w-auto">
+                <i class="fas fa-rocket mr-2"></i>Start Trading
+              </button>
+              <button onclick="navigateTo('marketplace')" class="px-8 py-3.5 rounded-2xl text-base font-medium text-gray-300 hover:text-white border border-white/10 hover:border-white/20 transition w-full sm:w-auto">
+                Browse Marketplace
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="px-6 pb-20">
+          <div class="max-w-5xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="glass-card rounded-2xl p-5 text-center">
+              <p class="stat-num text-2xl sm:text-3xl text-white mb-1" data-count="12450">0</p>
+              <p class="text-xs text-gray-500">Total Transactions</p>
+            </div>
+            <div class="glass-card rounded-2xl p-5 text-center">
+              <p class="stat-num text-2xl sm:text-3xl text-electric mb-1" data-count="892000">0</p>
+              <p class="text-xs text-gray-500">Pi Volume</p>
+            </div>
+            <div class="glass-card rounded-2xl p-5 text-center">
+              <p class="stat-num text-2xl sm:text-3xl text-white mb-1" data-count="5200">0</p>
+              <p class="text-xs text-gray-500">Active Users</p>
+            </div>
+            <div class="glass-card rounded-2xl p-5 text-center">
+              <p class="stat-num text-2xl sm:text-3xl text-neon mb-1" data-count="99">0</p>
+              <p class="text-xs text-gray-500">Success Rate %</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- How It Works -->
+        <div class="px-6 pb-24">
+          <div class="max-w-5xl mx-auto">
+            <div class="text-center mb-14">
+              <h2 class="font-heading text-3xl font-bold text-white mb-3">How Escrow Works</h2>
+              <p class="text-gray-500">Simple, secure, and transparent process</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div class="glass-card rounded-2xl p-6 text-center group">
+                <div class="step-icon bg-electric/10 text-electric mx-auto mb-4 group-hover:bg-electric/20 transition">
+                  <i class="fas fa-handshake"></i>
+                </div>
+                <h3 class="font-heading font-semibold text-white mb-2">Create Deal</h3>
+                <p class="text-sm text-gray-500">Buyer initiates an escrow with terms and amount</p>
+              </div>
+              <div class="glass-card rounded-2xl p-6 text-center group">
+                <div class="step-icon bg-yellow-500/10 text-yellow-400 mx-auto mb-4 group-hover:bg-yellow-500/20 transition">
+                  <i class="fas fa-lock"></i>
+                </div>
+                <h3 class="font-heading font-semibold text-white mb-2">Funds Locked</h3>
+                <p class="text-sm text-gray-500">Pi is securely held in escrow until completion</p>
+              </div>
+              <div class="glass-card rounded-2xl p-6 text-center group">
+                <div class="step-icon bg-blue-500/10 text-blue-400 mx-auto mb-4 group-hover:bg-blue-500/20 transition">
+                  <i class="fas fa-truck"></i>
+                </div>
+                <h3 class="font-heading font-semibold text-white mb-2">Seller Delivers</h3>
+                <p class="text-sm text-gray-500">Seller ships product or delivers the service</p>
+              </div>
+              <div class="glass-card rounded-2xl p-6 text-center group">
+                <div class="step-icon bg-green-500/10 text-green-400 mx-auto mb-4 group-hover:bg-green-500/20 transition">
+                  <i class="fas fa-check-circle"></i>
+                </div>
+                <h3 class="font-heading font-semibold text-white mb-2">Funds Released</h3>
+                <p class="text-sm text-gray-500">Buyer confirms and Pi is released to seller</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trust Section -->
+        <div class="px-6 pb-24">
+          <div class="max-w-5xl mx-auto glass-card rounded-3xl p-8 sm:p-12 text-center glow">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-electric/20 to-purple-500/20 flex items-center justify-center mx-auto mb-6">
+              <i class="fas fa-shield-halved text-electric text-2xl"></i>
+            </div>
+            <h2 class="font-heading text-3xl font-bold text-white mb-4">Built for Trust</h2>
+            <p class="text-gray-400 max-w-xl mx-auto mb-8">Every transaction is protected by our multi-layer escrow protocol. Dispute resolution, seller verification, and transparent tracking ensure your Pi is always safe.</p>
+            <div class="flex flex-wrap justify-center gap-6 text-sm">
+              <div class="flex items-center gap-2 text-gray-300"><i class="fas fa-check text-neon"></i>Escrow Protection</div>
+              <div class="flex items-center gap-2 text-gray-300"><i class="fas fa-check text-neon"></i>Dispute Resolution</div>
+              <div class="flex items-center gap-2 text-gray-300"><i class="fas fa-check text-neon"></i>Verified Sellers</div>
+              <div class="flex items-center gap-2 text-gray-300"><i class="fas fa-check text-neon"></i>Real-time Tracking</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="px-6 py-8 border-t border-white/5">
+          <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-electric to-cyan flex items-center justify-center"><i class="fas fa-shield-halved text-white text-[10px]"></i></div>
+              <span class="font-heading font-semibold text-sm text-gray-400">PiHub</span>
+            </div>
+            <p class="text-xs text-gray-600">Secure escrow marketplace for Pi Network</p>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== LOGIN PAGE ==================== -->
+  <section id="page-login" class="page">
+    <div class="min-h-screen flex items-center justify-center px-6">
+      <div class="w-full max-w-md">
+        <div class="text-center mb-8">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-electric to-cyan flex items-center justify-center mx-auto mb-5">
+            <i class="fas fa-shield-halved text-white text-xl"></i>
+          </div>
+          <h1 class="font-heading text-3xl font-bold text-white mb-2">Welcome to PiHub</h1>
+          <p class="text-gray-500 text-sm">Sign in with your Pi Network account</p>
+        </div>
+
+        <div class="gradient-border p-8">
+          <div class="relative z-10 space-y-5">
+            <div>
+              <label class="block text-sm text-gray-400 mb-2">Username</label>
+              <input id="login-username" type="text" value="pioneer_user" class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:border-electric/40 focus:outline-none focus:ring-1 focus:ring-electric/20 transition text-sm" placeholder="Enter Pi username">
+            </div>
+            <div>
+              <label class="block text-sm text-gray-400 mb-2">Role</label>
+              <select id="login-role" class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-electric/40 focus:outline-none focus:ring-1 focus:ring-electric/20 transition text-sm appearance-none">
+                <option value="buyer" class="bg-navy-800">Buyer</option>
+                <option value="seller" class="bg-navy-800">Seller</option>
+                <option value="admin" class="bg-navy-800">Admin</option>
+              </select>
+            </div>
+
+            <button onclick="handleLogin()" class="w-full py-3.5 rounded-xl font-semibold text-white flex items-center justify-center gap-3 text-sm" style="background:linear-gradient(135deg,#f5a623,#e8951a);box-shadow:0 4px 20px rgba(245,166,35,0.25)">
+              <i class="fas fa-circle text-[10px]"></i>
+              Authenticate with Pi
+            </button>
+
+            <div class="flex items-center gap-3 my-2">
+              <div class="flex-1 h-px bg-white/5"></div>
+              <span class="text-[11px] text-gray-600">SECURE AUTH</span>
+              <div class="flex-1 h-px bg-white/5"></div>
+            </div>
+
+            <button onclick="handleDemoLogin()" class="w-full py-3 rounded-xl font-medium text-electric border border-electric/20 hover:bg-electric/5 transition text-sm">
+              Demo Mode
+            </button>
+          </div>
+        </div>
+
+        <p class="text-center text-xs text-gray-600 mt-6">By signing in, you agree to our Terms of Service</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== DASHBOARD (BUYER) ==================== -->
+  <section id="page-dashboard" class="page">
+    <div class="px-4 lg:px-8 py-6 max-w-7xl mx-auto">
+      <!-- Welcome -->
+      <div class="mb-8">
+        <h1 class="font-heading text-2xl font-bold text-white mb-1">Welcome back, <span id="dash-username" class="text-electric">Pioneer</span></h1>
+        <p class="text-gray-500 text-sm">Here's your transaction overview</p>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="glass-card rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-xl bg-electric/10 flex items-center justify-center"><i class="fas fa-wallet text-electric"></i></div>
+            <span class="text-[11px] text-neon font-medium"><i class="fas fa-arrow-up text-[9px] mr-1"></i>12%</span>
+          </div>
+          <p class="stat-num text-xl text-white mb-0.5">3,247.85</p>
+          <p class="text-[11px] text-gray-500">Pi Balance</p>
+        </div>
+        <div class="glass-card rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center"><i class="fas fa-clock text-yellow-400"></i></div>
+            <span class="text-[11px] text-yellow-400 font-medium">Active</span>
+          </div>
+          <p class="stat-num text-xl text-white mb-0.5">4</p>
+          <p class="text-[11px] text-gray-500">Pending Escrows</p>
+        </div>
+        <div class="glass-card rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center"><i class="fas fa-check text-green-400"></i></div>
+            <span class="text-[11px] text-neon font-medium"><i class="fas fa-arrow-up text-[9px] mr-1"></i>8%</span>
+          </div>
+          <p class="stat-num text-xl text-white mb-0.5">23</p>
+          <p class="text-[11px] text-gray-500">Completed</p>
+        </div>
+        <div class="glass-card rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center"><i class="fas fa-star text-purple-400"></i></div>
+            <span class="text-[11px] text-electric font-medium">Top 5%</span>
+          </div>
+          <p class="stat-num text-xl text-white mb-0.5">4.9</p>
+          <p class="text-[11px] text-gray-500">Reputation</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Chart -->
+        <div class="lg:col-span-2 glass-card rounded-2xl p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="font-heading font-semibold text-white">Transaction Volume</h3>
+            <div class="flex gap-1 text-[11px]">
+              <button class="px-3 py-1 rounded-lg bg-electric/10 text-electric font-medium">7D</button>
+              <button class="px-3 py-1 rounded-lg text-gray-500 hover:text-gray-300 transition">30D</button>
+              <button class="px-3 py-1 rounded-lg text-gray-500 hover:text-gray-300 transition">ALL</button>
+            </div>
+          </div>
+          <div class="chart-container"><canvas id="dashChart"></canvas></div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="glass-card rounded-2xl p-6">
+          <h3 class="font-heading font-semibold text-white mb-4">Recent Activity</h3>
+          <div class="space-y-3" id="recent-activity">
+            <div class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/3 transition">
+              <div class="w-9 h-9 rounded-lg bg-green-500/10 flex items-center justify-center"><i class="fas fa-check text-green-400 text-xs"></i></div>
+              <div class="flex-1 min-w-0"><p class="text-sm text-white truncate">Escrow #1024 completed</p><p class="text-[11px] text-gray-500">2 min ago</p></div>
+              <span class="text-xs text-green-400 font-medium">+150 π</span>
+            </div>
+            <div class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/3 transition">
+              <div class="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center"><i class="fas fa-truck text-blue-400 text-xs"></i></div>
+              <div class="flex-1 min-w-0"><p class="text-sm text-white truncate">Order #1021 shipped</p><p class="text-[11px] text-gray-500">1 hr ago</p></div>
+              <span class="text-xs text-blue-400 font-medium">In Transit</span>
+            </div>
+            <div class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/3 transition">
+              <div class="w-9 h-9 rounded-lg bg-electric/10 flex items-center justify-center"><i class="fas fa-lock text-electric text-xs"></i></div>
+              <div class="flex-1 min-w-0"><p class="text-sm text-white truncate">Escrow #1025 created</p><p class="text-[11px] text-gray-500">3 hrs ago</p></div>
+              <span class="text-xs text-electric font-medium">-85 π</span>
+            </div>
+            <div class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/3 transition">
+              <div class="w-9 h-9 rounded-lg bg-yellow-500/10 flex items-center justify-center"><i class="fas fa-star text-yellow-400 text-xs"></i></div>
+              <div class="flex-1 min-w-0"><p class="text-sm text-white truncate">New review on #1019</p><p class="text-[11px] text-gray-500">5 hrs ago</p></div>
+              <span class="text-xs text-yellow-400 font-medium">5 stars</span>
+            </div>
+            <div class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/3 transition">
+              <div class="w-9 h-9 rounded-lg bg-red-500/10 flex items-center justify-center"><i class="fas fa-exclamation text-red-400 text-xs"></i></div>
+              <div class="flex-1 min-w-0"><p class="text-sm text-white truncate">Dispute #87 resolved</p><p class="text-[11px] text-gray-500">1 day ago</p></div>
+              <span class="text-xs text-green-400 font-medium">Refunded</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Escrows -->
+      <div class="mt-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-heading font-semibold text-white">Active Escrows</h3>
+          <button onclick="navigateTo('create-escrow')" class="text-xs text-electric hover:text-cyan transition">Create New <i class="fas fa-plus ml-1"></i></button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="active-escrows">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== MARKETPLACE ==================== -->
+  <section id="page-marketplace" class="page">
+    <div class="px-4 lg:px-8 py-6 max-w-7xl mx-auto">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <h1 class="font-heading text-2xl font-bold text-white">Marketplace</h1>
+          <p class="text-gray-500 text-sm">Discover products and services</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="relative flex-1 sm:flex-initial">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-600 text-sm"></i>
+            <input id="market-search" type="text" placeholder="Search products..." class="w-full sm:w-64 pl-9 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:border-electric/30 focus:outline-none text-sm" oninput="filterProducts()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Categories -->
+      <div class="flex gap-2 mb-6 overflow-x-auto no-scrollbar pb-2" id="category-filters">
+        <button class="cat-btn px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition bg-electric/10 text-electric border border-electric/20" data-cat="all" onclick="setCategory('all')">All</button>
+        <button class="cat-btn px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition bg-white/5 text-gray-400 border border-white/5 hover:border-electric/20" data-cat="digital" onclick="setCategory('digital')"><i class="fas fa-code mr-1.5"></i>Digital</button>
+        <button class="cat-btn px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition bg-white/5 text-gray-400 border border-white/5 hover:border-electric/20" data-cat="services" onclick="setCategory('services')"><i class="fas fa-wrench mr-1.5"></i>Services</button>
+        <button class="cat-btn px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition bg-white/5 text-gray-400 border border-white/5 hover:border-electric/20" data-cat="physical" onclick="setCategory('physical')"><i class="fas fa-box mr-1.5"></i>Physical</button>
+        <button class="cat-btn px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition bg-white/5 text-gray-400 border border-white/5 hover:border-electric/20" data-cat="nft" onclick="setCategory('nft')"><i class="fas fa-gem mr-1.5"></i>NFTs</button>
+      </div>
+
+      <!-- Product Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="product-grid">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== PRODUCT DETAIL ==================== -->
+  <section id="page-product" class="page">
+    <div class="px-4 lg:px-8 py-6 max-w-5xl mx-auto">
+      <button onclick="navigateTo('marketplace')" class="flex items-center gap-2 text-sm text-gray-400 hover:text-white mb-6 transition"><i class="fas fa-arrow-left"></i>Back to Marketplace</button>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8" id="product-detail-content">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== CREATE ESCROW ==================== -->
+  <section id="page-create-escrow" class="page">
+    <div class="px-4 lg:px-8 py-6 max-w-2xl mx-auto">
+      <h1 class="font-heading text-2xl font-bold text-white mb-2">Create Escrow</h1>
+      <p class="text-gray-500 text-sm mb-8">Set up a secure transaction</p>
+
+      <div class="glass-card rounded-2xl p-6 space-y-5">
+        <div>
+          <label class="block text-sm text-gray-400 mb-2">Transaction Title</label>
+          <input id="esc-title" type="text" class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:border-electric/30 focus:outline-none text-sm" placeholder="e.g. Logo Design Service">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Amount (π)</label>
+            <input id="esc-amount" type="number" class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:border-electric/30 focus:outline-none text-sm" placeholder="0.00">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Category</label>
+            <select id="esc-category" class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-electric/30 focus:outline-none text-sm appearance-none">
+              <option value="digital" class="bg-navy-800">Digital Product</option>
+              <option value="services" class="bg-navy-800">Service</option>
+              <option value="physical" class="bg-navy-800">Physical Good</option>
+              <option value="nft" class="bg-navy-800">NFT</option>
+            </select>
+          </div>
+        </div>
+        <div id="buyer-fields">
+          <label class="block text-sm text-gray-400 mb-2">Seller Username</label>
+          <input id="esc-seller" type="text" class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:border-electric/30 focus:outline-none text-sm" placeholder="@seller_username">
+        </div>
+        <div id="seller-fields" style="display:none">
+          <label class="block text-sm text-gray-400 mb-2">Buyer Username</label>
+          <input id="esc-buyer" type="text" class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:border-electric/30 focus:outline-none text-sm" placeholder="@buyer_username">
+        </div>
+        <div>
+          <label class="block text-sm text-gray-400 mb-2">Description</label>
+          <textarea id="esc-desc" rows="3" class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:border-electric/30 focus:outline-none text-sm resize-none" placeholder="Describe the transaction details..."></textarea>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-400 mb-2">Proof / Attachment</label>
+          <div class="border-2 border-dashed border-white/10 rounded-xl p-8 text-center hover:border-electric/20 transition cursor-pointer" onclick="document.getElementById('esc-file').click()">
+            <i class="fas fa-cloud-upload-alt text-2xl text-gray-600 mb-2"></i>
+            <p class="text-sm text-gray-500">Click to upload proof</p>
+            <input id="esc-file" type="file" class="hidden">
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3 p-4 rounded-xl bg-electric/5 border border-electric/10">
+          <i class="fas fa-shield-halved text-electric mt-0.5"></i>
+          <div>
+            <p class="text-sm text-white font-medium">Escrow Protection</p>
+            <p class="text-xs text-gray-500 mt-0.5">Funds will be locked until both parties confirm the transaction is complete.</p>
+          </div>
+        </div>
+
+        <button onclick="createEscrow()" class="w-full glow-btn py-3.5 rounded-xl text-sm font-semibold">
+          <i class="fas fa-lock mr-2"></i>Create Secure Escrow
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== ESCROW DETAIL ==================== -->
+  <section id="page-escrow-detail" class="page">
+    <div class="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
+      <button onclick="navigateTo('dashboard')" class="flex items-center gap-2 text-sm text-gray-400 hover:text-white mb-6 transition"><i class="fas fa-arrow-left"></i>Back to Dashboard</button>
+
+      <div id="escrow-detail-content">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== DISPUTES ==================== -->
+  <section id="page-disputes" class="page">
+    <div class="px-4 lg:px-8 py-6 max-w-5xl mx-auto">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="font-heading text-2xl font-bold text-white">Dispute Center</h1>
+          <p class="text-gray-500 text-sm">Manage and resolve disputes</p>
+        </div>
+      </div>
+
+      <div class="space-y-4" id="dispute-list">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Create Dispute -->
+      <div class="mt-8 glass-card rounded-2xl p-6">
+        <h3 class="font-heading font-semibold text-white mb-4">Open a Dispute</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Escrow ID</label>
+            <input id="disp-escrow" type="text" class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:border-electric/30 focus:outline-none text-sm" placeholder="#ESC-XXXX">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Reason</label>
+            <select id="disp-reason" class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-electric/30 focus:outline-none text-sm appearance-none">
+              <option class="bg-navy-800">Item not received</option>
+              <option class="bg-navy-800">Item not as described</option>
+              <option class="bg-navy-800">Seller unresponsive</option>
+              <option class="bg-navy-800">Suspected fraud</option>
+              <option class="bg-navy-800">Other</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Description</label>
+            <textarea id="disp-desc" rows="3" class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:border-electric/30 focus:outline-none text-sm resize-none" placeholder="Explain the issue in detail..."></textarea>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Evidence</label>
+            <div class="border-2 border-dashed border-white/10 rounded-xl p-6 text-center hover:border-electric/20 transition cursor-pointer">
+              <i class="fas fa-upload text-lg text-gray-600 mb-1"></i>
+              <p class="text-xs text-gray-500">Upload screenshots or proof</p>
+            </div>
+          </div>
+          <button onclick="submitDispute()" class="glow-btn px-6 py-3 rounded-xl text-sm font-semibold">
+            <i class="fas fa-gavel mr-2"></i>Submit Dispute
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== ADMIN DASHBOARD ==================== -->
+  <section id="page-admin" class="page">
+    <div class="px-4 lg:px-8 py-6 max-w-7xl mx-auto">
+      <div class="flex items-center gap-3 mb-8">
+        <div class="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center"><i class="fas fa-shield text-red-400"></i></div>
+        <div>
+          <h1 class="font-heading text-2xl font-bold text-white">Admin Dashboard</h1>
+          <p class="text-gray-500 text-sm">Platform overview and management</p>
+        </div>
+      </div>
+
+      <!-- Admin Stats -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="glass-card rounded-2xl p-5">
+          <p class="text-xs text-gray-500 mb-2">Total Volume</p>
+          <p class="stat-num text-2xl text-white">892,450</p>
+          <p class="text-[11px] text-neon mt-1"><i class="fas fa-arrow-up text-[9px] mr-1"></i>23% this month</p>
+        </div>
+        <div class="glass-card rounded-2xl p-5">
+          <p class="text-xs text-gray-500 mb-2">Active Escrows</p>
+          <p class="stat-num text-2xl text-yellow-400">147</p>
+          <p class="text-[11px] text-gray-500 mt-1">4,820 π locked</p>
+        </div>
+        <div class="glass-card rounded-2xl p-5">
+          <p class="text-xs text-gray-500 mb-2">Open Disputes</p>
+          <p class="stat-num text-2xl text-red-400">12</p>
+          <p class="text-[11px] text-red-400 mt-1">3 high priority</p>
+        </div>
+        <div class="glass-card rounded-2xl p-5">
+          <p class="text-xs text-gray-500 mb-2">Platform Revenue</p>
+          <p class="stat-num text-2xl text-electric">13,410</p>
+          <p class="text-[11px] text-neon mt-1"><i class="fas fa-arrow-up text-[9px] mr-1"></i>18% this month</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Volume Chart -->
+        <div class="lg:col-span-2 glass-card rounded-2xl p-6">
+          <h3 class="font-heading font-semibold text-white mb-4">Platform Volume</h3>
+          <div class="chart-container"><canvas id="adminChart"></canvas></div>
+        </div>
+
+        <!-- Recent Disputes -->
+        <div class="glass-card rounded-2xl p-6">
+          <h3 class="font-heading font-semibold text-white mb-4">Recent Disputes</h3>
+          <div class="space-y-3">
+            <div class="flex items-center gap-3 p-2.5 rounded-xl bg-red-500/5 border border-red-500/10">
+              <div class="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center"><i class="fas fa-exclamation text-red-400 text-xs"></i></div>
+              <div class="flex-1"><p class="text-sm text-white">#DSP-109</p><p class="text-[11px] text-gray-500">Item not received</p></div>
+              <span class="text-[10px] px-2 py-1 rounded-lg bg-red-500/10 text-red-400">High</span>
+            </div>
+            <div class="flex items-center gap-3 p-2.5 rounded-xl bg-yellow-500/5 border border-yellow-500/10">
+              <div class="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center"><i class="fas fa-exclamation text-yellow-400 text-xs"></i></div>
+              <div class="flex-1"><p class="text-sm text-white">#DSP-108</p><p class="text-[11px] text-gray-500">Not as described</p></div>
+              <span class="text-[10px] px-2 py-1 rounded-lg bg-yellow-500/10 text-yellow-400">Med</span>
+            </div>
+            <div class="flex items-center gap-3 p-2.5 rounded-xl bg-yellow-500/5 border border-yellow-500/10">
+              <div class="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center"><i class="fas fa-exclamation text-yellow-400 text-xs"></i></div>
+              <div class="flex-1"><p class="text-sm text-white">#DSP-107</p><p class="text-[11px] text-gray-500">Seller unresponsive</p></div>
+              <span class="text-[10px] px-2 py-1 rounded-lg bg-yellow-500/10 text-yellow-400">Med</span>
+            </div>
+            <div class="flex items-center gap-3 p-2.5 rounded-xl bg-white/3 border border-white/5">
+              <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center"><i class="fas fa-exclamation text-gray-500 text-xs"></i></div>
+              <div class="flex-1"><p class="text-sm text-white">#DSP-106</p><p class="text-[11px] text-gray-500">Other</p></div>
+              <span class="text-[10px] px-2 py-1 rounded-lg bg-white/5 text-gray-400">Low</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Management -->
+      <div class="mt-6 glass-card rounded-2xl p-6">
+        <h3 class="font-heading font-semibold text-white mb-4">User Management</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead><tr class="text-left text-gray-500 text-xs border-b border-white/5">
+              <th class="pb-3 font-medium">User</th><th class="pb-3 font-medium">Role</th><th class="pb-3 font-medium">Transactions</th><th class="pb-3 font-medium">Reputation</th><th class="pb-3 font-medium">Status</th><th class="pb-3 font-medium">Actions</th>
+            </tr></thead>
+            <tbody id="admin-users">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== PROFILE ==================== -->
+  <section id="page-profile" class="page">
+    <div class="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
+      <!-- Profile Header -->
+      <div class="glass-card rounded-2xl p-6 mb-6">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+          <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-electric/30 to-purple-500/30 flex items-center justify-center text-3xl font-heading font-bold text-electric" id="profile-avatar">P</div>
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-1">
+              <h2 class="font-heading text-xl font-bold text-white" id="profile-name">pioneer_user</h2>
+              <span class="badge-trust text-[10px] px-2 py-0.5 rounded-full font-medium"><i class="fas fa-check mr-1"></i>Verified</span>
+            </div>
+            <p class="text-gray-500 text-sm mb-3">Pi Network Pioneer since 2023</p>
+            <div class="flex flex-wrap gap-4 text-sm">
+              <span class="text-gray-400"><i class="fas fa-check-circle text-neon mr-1.5"></i><strong class="text-white">23</strong> Completed</span>
+              <span class="text-gray-400"><i class="fas fa-star text-yellow-400 mr-1.5"></i><strong class="text-white">4.9</strong> Rating</span>
+              <span class="text-gray-400"><i class="fas fa-shield-halved text-electric mr-1.5"></i><strong class="text-white">98%</strong> Trust</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Reviews -->
+        <div class="lg:col-span-2 glass-card rounded-2xl p-6">
+          <h3 class="font-heading font-semibold text-white mb-4">Reviews</h3>
+          <div class="space-y-4">
+            <div class="p-4 rounded-xl bg-white/3 border border-white/5">
+              <div class="flex items-center gap-3 mb-2">
+                <div class="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-xs font-bold text-purple-400">A</div>
+                <div><p class="text-sm text-white font-medium">alpha_trader</p><p class="text-[11px] text-gray-500">2 days ago</p></div>
+                <div class="ml-auto flex gap-0.5"><i class="fas fa-star star filled text-xs"></i><i class="fas fa-star star filled text-xs"></i><i class="fas fa-star star filled text-xs"></i><i class="fas fa-star star filled text-xs"></i><i class="fas fa-star star filled text-xs"></i></div>
+              </div>
+              <p class="text-sm text-gray-400">Excellent transaction! Fast delivery and great communication throughout the process.</p>
+            </div>
+            <div class="p-4 rounded-xl bg-white/3 border border-white/5">
+              <div class="flex items-center gap-3 mb-2">
+                <div class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-xs font-bold text-green-400">M</div>
+                <div><p class="text-sm text-white font-medium">mine_master</p><p class="text-[11px] text-gray-500">1 week ago</p></div>
+                <div class="ml-auto flex gap-0.5"><i class="fas fa-star star filled text-xs"></i><i class="fas fa-star star filled text-xs"></i><i class="fas fa-star star filled text-xs"></i><i class="fas fa-star star filled text-xs"></i><i class="fas fa-star star text-xs"></i></div>
+              </div>
+              <p class="text-sm text-gray-400">Reliable seller, item exactly as described. Would trade again.</p>
+            </div>
+            <div class="p-4 rounded-xl bg-white/3 border border-white/5">
+              <div class="flex items-center gap-3 mb-2">
+                <div class="w-8 h-8 rounded-full bg-electric/20 flex items-center justify-center text-xs font-bold text-electric">Z</div>
+                <div><p class="text-sm text-white font-medium">zen_dev</p><p class="text-[11px] text-gray-500">2 weeks ago</p></div>
+                <div class="ml-auto flex gap-0.5"><i class="fas fa-star star filled text-xs"></i><i class="fas fa-star star filled text-xs"></i><i class="fas fa-star star filled text-xs"></i><i class="fas fa-star star filled text-xs"></i><i class="fas fa-star star filled text-xs"></i></div>
+              </div>
+              <p class="text-sm text-gray-400">Outstanding quality and very professional. The escrow process was smooth and secure.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trust Score -->
+        <div class="space-y-4">
+          <div class="glass-card rounded-2xl p-6 text-center">
+            <div class="w-24 h-24 rounded-full border-4 border-electric/20 flex items-center justify-center mx-auto mb-4 relative">
+              <span class="stat-num text-3xl text-white">98</span>
+              <svg class="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(0,212,255,0.1)" stroke-width="4"/>
+                <circle cx="50" cy="50" r="46" fill="none" stroke="#00d4ff" stroke-width="4" stroke-dasharray="289" stroke-dashoffset="6" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <p class="text-sm font-medium text-white mb-1">Trust Score</p>
+            <p class="text-xs text-gray-500">Excellent Standing</p>
+          </div>
+          <div class="glass-card rounded-2xl p-6">
+            <h4 class="font-heading font-semibold text-white mb-3 text-sm">Badges</h4>
+            <div class="flex flex-wrap gap-2">
+              <span class="px-3 py-1.5 rounded-lg bg-electric/10 border border-electric/20 text-electric text-[11px] font-medium"><i class="fas fa-check-circle mr-1"></i>Verified</span>
+              <span class="px-3 py-1.5 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-[11px] font-medium"><i class="fas fa-star mr-1"></i>Top Rated</span>
+              <span class="px-3 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[11px] font-medium"><i class="fas fa-fire mr-1"></i>Active</span>
+              <span class="px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-[11px] font-medium"><i class="fas fa-shield mr-1"></i>Trusted</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Mobile Bottom Nav -->
+<nav class="bottom-nav" id="bottom-nav" style="display:none">
+  <div class="flex items-center justify-around px-2">
+    <button onclick="navigateTo('dashboard')" class="bnav-btn flex flex-col items-center gap-1 py-2 px-3 text-gray-500 transition" data-page="dashboard">
+      <i class="fas fa-chart-line text-lg"></i><span class="text-[10px]">Home</span>
+    </button>
+    <button onclick="navigateTo('marketplace')" class="bnav-btn flex flex-col items-center gap-1 py-2 px-3 text-gray-500 transition" data-page="marketplace">
+      <i class="fas fa-store text-lg"></i><span class="text-[10px]">Market</span>
+    </button>
+    <button onclick="navigateTo('create-escrow')" class="bnav-btn flex flex-col items-center gap-1 py-2 px-3 transition" data-page="create-escrow">
+      <div class="w-10 h-10 -mt-4 rounded-2xl bg-gradient-to-br from-electric to-cyan flex items-center justify-center shadow-lg" style="box-shadow:0 4px 20px rgba(0,212,255,0.3)"><i class="fas fa-plus text-white text-lg"></i></div>
+      <span class="text-[10px] text-gray-500">Escrow</span>
+    </button>
+    <button onclick="navigateTo('escrow-detail')" class="bnav-btn flex flex-col items-center gap-1 py-2 px-3 text-gray-500 transition" data-page="escrow-detail">
+      <i class="fas fa-clock-rotate-left text-lg"></i><span class="text-[10px]">Escrows</span>
+    </button>
+    <button onclick="navigateTo('profile')" class="bnav-btn flex flex-col items-center gap-1 py-2 px-3 text-gray-500 transition" data-page="profile">
+      <i class="fas fa-user-circle text-lg"></i><span class="text-[10px]">Profile</span>
+    </button>
+  </div>
+</nav>
+
+<!-- Toast Container -->
+<div id="toast-container"></div>
+
+<!-- Modal Container -->
+<div id="modal-container"></div>
+
+<script>
+/* ======================== APP STATE ======================== */
+const APP = {
+  currentPage: 'landing',
+  isLoggedIn: false,
+  user: { username: 'pioneer_user', role: 'buyer', balance: 3247.85, reputation: 4.9, trust: 98 },
+  selectedProduct: null,
+  selectedEscrow: null,
+  currentCategory: 'all',
+  charts: {}
+};
+
+/* ======================== DATA ======================== */
+const PRODUCTS = [
+  { id:1, title:'Custom Logo Design', price:150, category:'services', seller:'creative_pi', rating:4.9, reviews:34, image:'https://picsum.photos/seed/logo1/400/300.jpg', desc:'Professional logo design for your brand. Includes 3 concepts, unlimited revisions, and source files delivered in 48 hours.' },
+  { id:2, title:'Pi Node Setup Guide', price:25, category:'digital', seller:'node_master', rating:4.7, reviews:89, image:'https://picsum.photos/seed/node2/400/300.jpg', desc:'Complete step-by-step guide to setting up your Pi Node. Includes troubleshooting tips and optimization strategies.' },
+  { id:3, title:'Web3 Development Service', price:500, category:'services', seller:'dev_wizard', rating:5.0, reviews:12, image:'https://picsum.photos/seed/dev3/400/300.jpg', desc:'Full-stack Web3 development. Smart contracts, dApps, and blockchain integration. Expert-level Solidity and Rust.' },
+  { id:4, title:'Crypto Hardware Wallet', price:85, category:'physical', seller:'secure_store', rating:4.8, reviews:67, image:'https://picsum.photos/seed/wallet4/400/300.jpg', desc:'Premium hardware wallet supporting multiple chains. Military-grade encryption, PIN protection, and backup recovery.' },
+  { id:5, title:'Pi Network Art Collection', price:200, category:'nft', seller:'nft_pioneer', rating:4.6, reviews:23, image:'https://picsum.photos/seed/nft5/400/300.jpg', desc:'Exclusive digital art collection celebrating Pi Network milestones. 10 unique pieces with commercial rights.' },
+  { id:6, title:'SEO Optimization Package', price:120, category:'services', seller:'growth_pi', rating:4.5, reviews:41, image:'https://picsum.photos/seed/seo6/400/300.jpg', desc:'Complete SEO audit and optimization for your website. Keyword research, on-page SEO, and monthly reporting.' },
+  { id:7, title:'Premium VPN - 1 Year', price:45, category:'digital', seller:'privacy_node', rating:4.4, reviews:156, image:'https://picsum.photos/seed/vpn7/400/300.jpg', desc:'Military-grade VPN protection. Zero logs, 50+ server locations, unlimited bandwidth. 1-year subscription.' },
+  { id:8, title:'Handmade Crypto Art Print', price:60, category:'physical', seller:'art_block', rating:4.9, reviews:18, image:'https://picsum.photos/seed/art8/400/300.jpg', desc:'Limited edition hand-drawn art print on premium canvas. Features iconic cryptocurrency themes. Signed by artist.' },
+  { id:9, title:'Smart Contract Audit', price:350, category:'services', seller:'audit_pro', rating:5.0, reviews:8, image:'https://picsum.photos/seed/audit9/400/300.jpg', desc:'Professional smart contract security audit. Comprehensive vulnerability assessment with detailed remediation report.' },
+  { id:10, title:'Pi Pixel Avatar NFT', price:30, category:'nft', seller:'pixel_pi', rating:4.3, reviews:72, image:'https://picsum.photos/seed/pixel10/400/300.jpg', desc:'Unique pixel art avatar for Pi Network pioneers. Customizable traits, rare attributes, and community access.' },
+  { id:11, title:'Raspberry Pi Starter Kit', price:75, category:'physical', seller:'tech_hub', rating:4.7, reviews:93, image:'https://picsum.photos/seed/rpi11/400/300.jpg', desc:'Complete Raspberry Pi 4 kit with case, power supply, SD card, and cooling fan. Perfect for Pi Node hosting.' },
+  { id:12, title:'Social Media Manager', price:180, category:'services', seller:'social_pi', rating:4.6, reviews:29, image:'https://picsum.photos/seed/social12/400/300.jpg', desc:'Professional social media management for 30 days. Content creation, scheduling, engagement, and analytics.' },
+];
+
+const ESCROWS = [
+  { id:'ESC-1025', title:'Logo Design for PiPay', amount:150, status:'hold', seller:'creative_pi', buyer:'pioneer_user', created:'2h ago', category:'services', hash:'0x7f3a...b2c1' },
+  { id:'ESC-1024', title:'VPN Subscription', amount:45, status:'shipped', seller:'privacy_node', buyer:'pioneer_user', created:'1d ago', category:'digital', hash:'0x2d8e...f4a7' },
+  { id:'ESC-1023', title:'Web3 Development', amount:500, status:'completed', seller:'pioneer_user', buyer:'dev_wizard', created:'5d ago', category:'services', hash:'0x9c1b...d3e5' },
+  { id:'ESC-1022', title:'Hardware Wallet', amount:85, status:'disputed', seller:'secure_store', buyer:'pioneer_user', created:'7d ago', category:'physical', hash:'0x4a6f...8c2d' },
+  { id:'ESC-1021', title:'NFT Collection Sale', amount:200, status:'released', seller:'pioneer_user', buyer:'nft_pioneer', created:'10d ago', category:'nft', hash:'0xe3d7...1f9a' },
+];
+
+const DISPUTES_DATA = [
+  { id:'DSP-109', escrowId:'ESC-1022', reason:'Item not received', status:'open', priority:'high', created:'3h ago', user:'pioneer_user', against:'secure_store' },
+  { id:'DSP-108', escrowId:'ESC-1019', reason:'Item not as described', status:'mediating', priority:'medium', created:'2d ago', user:'alpha_trader', against:'pioneer_user' },
+  { id:'DSP-107', escrowId:'ESC-1015', reason:'Seller unresponsive', status:'resolved', priority:'low', created:'7d ago', user:'pioneer_user', against:'lazy_seller' },
+];
+
+const ADMIN_USERS = [
+  { username:'creative_pi', role:'Seller', txns:87, rep:4.9, status:'active' },
+  { username:'node_master', role:'Seller', txns:145, rep:4.7, status:'active' },
+  { username:'dev_wizard', role:'Seller', txns:34, rep:5.0, status:'active' },
+  { username:'alpha_trader', role:'Buyer', txns:62, rep:4.5, status:'active' },
+  { username:'lazy_seller', role:'Seller', txns:12, rep:2.1, status:'flagged' },
+  { username:'scam_alert', role:'Buyer', txns:3, rep:1.2, status:'suspended' },
+];
+
+/* ======================== NAVIGATION ======================== */
+function navigateTo(page, data) {
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); });
+  // Show target page
+  const target = document.getElementById('page-' + page);
+  if (target) {
+    target.classList.add('active');
+    APP.currentPage = page;
+  }
+
+  // Update sidebar active state
+  document.querySelectorAll('.nav-link').forEach(l => {
+    l.classList.remove('bg-electric/10','text-electric');
+    l.classList.add('text-gray-400');
+  });
+  const activeLink = document.querySelector(`.nav-link[data-page="${page}"]`);
+  if (activeLink) {
+    activeLink.classList.add('bg-electric/10','text-electric');
+    activeLink.classList.remove('text-gray-400');
+  }
+
+  // Update bottom nav
+  document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('text-electric'));
+  const activeBnav = document.querySelector(`.bnav-btn[data-page="${page}"]`);
+  if (activeBnav) activeBnav.classList.add('text-electric');
+
+  // Show/hide topbar and nav
+  const isLandingOrLogin = page === 'landing' || page === 'login';
+  document.getElementById('topbar').style.display = isLandingOrLogin ? 'none' : '';
+  document.getElementById('bottom-nav').style.display = isLandingOrLogin ? 'none' : '';
+  document.getElementById('sidebar').style.display = isLandingOrLogin ? 'none' : '';
+
+  // Update page title
+  const titles = { dashboard:'Dashboard', marketplace:'Marketplace', 'create-escrow':'Create Escrow', 'escrow-detail':'Escrow Details', disputes:'Disputes', admin:'Admin Panel', profile:'Profile', product:'Product Details' };
+  document.getElementById('page-title').textContent = titles[page] || 'PiHub';
+
+  // Page-specific init
+  if (page === 'dashboard') initDashboard();
+  if (page === 'marketplace') renderProducts();
+  if (page === 'product' && data) renderProductDetail(data);
+  if (page === 'escrow-detail') renderEscrowDetail(data || ESCROWS[0]);
+  if (page === 'disputes') renderDisputes();
+  if (page === 'admin') initAdmin();
+  if (page === 'profile') updateProfile();
+
+  // Close mobile sidebar
+  document.getElementById('sidebar').classList.remove('open');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ======================== AUTH ======================== */
+function handleLogin() {
+  const username = document.getElementById('login-username').value.trim();
+  const role = document.getElementById('login-role').value;
+  if (!username) { showToast('Please enter a username', 'error'); return; }
+  APP.user.username = username;
+  APP.user.role = role;
+  APP.isLoggedIn = true;
+  updateUIForRole();
+  showToast('Welcome to PiHub, ' + username, 'success');
+  navigateTo('dashboard');
+}
+
+function handleDemoLogin() {
+  APP.user.username = 'pioneer_user';
+  APP.user.role = 'buyer';
+  APP.isLoggedIn = true;
+  updateUIForRole();
+  showToast('Demo mode activated', 'info');
+  navigateTo('dashboard');
+}
+
+function updateUIForRole() {
+  const u = APP.user;
+  document.getElementById('sidebar-username').textContent = u.username;
+  document.getElementById('sidebar-avatar').textContent = u.username[0].toUpperCase();
+  document.getElementById('topbar-avatar').textContent = u.username[0].toUpperCase();
+  document.getElementById('topbar-balance').textContent = u.balance.toLocaleString() + ' π';
+
+  // Show/hide admin nav
+  document.getElementById('admin-nav').style.display = u.role === 'admin' ? '' : 'none';
+
+  // Show/hide buyer/seller fields in create escrow
+  if (u.role === 'seller') {
+    document.getElementById('buyer-fields').style.display = 'none';
+    document.getElementById('seller-fields').style.display = '';
+  } else {
+    document.getElementById('buyer-fields').style.display = '';
+    document.getElementById('seller-fields').style.display = 'none';
+  }
+}
+
+/* ======================== DASHBOARD ======================== */
+function initDashboard() {
+  document.getElementById('dash-username').textContent = APP.user.username;
+  renderActiveEscrows();
+  initDashChart();
+}
+
+function renderActiveEscrows() {
+  const container = document.getElementById('active-escrows');
+  const active = ESCROWS.filter(e => e.status !== 'completed' && e.status !== 'released');
+  container.innerHTML = active.map(e => `
+    <div class="glass-card rounded-2xl p-5 cursor-pointer" onclick="navigateTo('escrow-detail', ESCROWS.find(x=>x.id==='${e.id}'))">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs text-gray-500 font-mono">${e.id}</span>
+        <span class="text-[11px] px-2.5 py-1 rounded-lg status-${e.status} font-medium">${e.status.toUpperCase()}</span>
+      </div>
+      <h4 class="text-sm font-medium text-white mb-2">${e.title}</h4>
+      <div class="flex items-center justify-between">
+        <span class="stat-num text-lg text-electric">${e.amount} π</span>
+        <span class="text-[11px] text-gray-500">${e.created}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function initDashChart() {
+  if (APP.charts.dash) APP.charts.dash.destroy();
+  const ctx = document.getElementById('dashChart');
+  if (!ctx) return;
+  APP.charts.dash = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+      datasets: [{
+        label: 'Volume (π)',
+        data: [420,680,530,890,750,920,1100],
+        borderColor: '#00d4ff',
+        backgroundColor: 'rgba(0,212,255,0.05)',
+        fill: true,
+        tension: 0.4,
+        borderWidth: 2,
+        pointBackgroundColor: '#00d4ff',
+        pointBorderColor: '#00d4ff',
+        pointRadius: 3,
+        pointHoverRadius: 6
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#4a5568', font: { size: 11 } } },
+        y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#4a5568', font: { size: 11 } } }
+      },
+      interaction: { intersect: false, mode: 'index' }
+    }
+  });
+}
+
+/* ======================== MARKETPLACE ======================== */
+function renderProducts() {
+  const grid = document.getElementById('product-grid');
+  const search = (document.getElementById('market-search')?.value || '').toLowerCase();
+  let filtered = PRODUCTS;
+  if (APP.currentCategory !== 'all') filtered = filtered.filter(p => p.category === APP.currentCategory);
+  if (search) filtered = filtered.filter(p => p.title.toLowerCase().includes(search) || p.desc.toLowerCase().includes(search));
+
+  grid.innerHTML = filtered.map(p => `
+    <div class="glass-card rounded-2xl overflow-hidden cursor-pointer group" onclick="navigateTo('product', PRODUCTS.find(x=>x.id===${p.id}))">
+      <div class="relative h-44 overflow-hidden">
+        <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy">
+        <div class="absolute inset-0 bg-gradient-to-t from-navy-900/80 to-transparent"></div>
+        <span class="absolute top-3 left-3 text-[10px] px-2.5 py-1 rounded-lg bg-navy-900/60 text-gray-300 backdrop-blur-sm border border-white/5 capitalize">${p.category}</span>
+      </div>
+      <div class="p-4">
+        <h3 class="font-medium text-white text-sm mb-2 truncate">${p.title}</h3>
+        <div class="flex items-center gap-2 mb-3">
+          <div class="flex items-center gap-1"><i class="fas fa-star text-yellow-400 text-[10px]"></i><span class="text-xs text-gray-400">${p.rating}</span></div>
+          <span class="text-[10px] text-gray-600">(${p.reviews})</span>
+          <span class="text-[10px] text-gray-600 ml-auto"><i class="fas fa-user mr-1"></i>${p.seller}</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="stat-num text-lg text-electric">${p.price} π</span>
+          <span class="text-[11px] text-gray-500 group-hover:text-electric transition">View Details <i class="fas fa-arrow-right ml-1"></i></span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterProducts() { renderProducts(); }
+
+function setCategory(cat) {
+  APP.currentCategory = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => {
+    b.classList.remove('bg-electric/10','text-electric','border-electric/20');
+    b.classList.add('bg-white/5','text-gray-400','border-white/5');
+  });
+  const active = document.querySelector(`.cat-btn[data-cat="${cat}"]`);
+  if (active) {
+    active.classList.add('bg-electric/10','text-electric','border-electric/20');
+    active.classList.remove('bg-white/5','text-gray-400','border-white/5');
+  }
+  renderProducts();
+}
+
+/* ======================== PRODUCT DETAIL ======================== */
+function renderProductDetail(product) {
+  if (!product) return;
+  APP.selectedProduct = product;
+  const container = document.getElementById('product-detail-content');
+  const stars = Array.from({length:5}, (_,i) => `<i class="fas fa-star star ${i < Math.round(product.rating) ? 'filled' : ''}"></i>`).join('');
+
+  container.innerHTML = `
+    <div>
+      <div class="rounded-2xl overflow-hidden mb-4">
+        <img src="${product.image}" alt="${product.title}" class="w-full h-64 sm:h-80 object-cover">
+      </div>
+      <div class="flex gap-3">
+        ${[1,2,3].map(i => `<div class="flex-1 rounded-xl overflow-hidden h-20"><img src="https://picsum.photos/seed/${product.id}sub${i}/200/100.jpg" class="w-full h-full object-cover" loading="lazy"></div>`).join('')}
+      </div>
+    </div>
+    <div>
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-xs px-2.5 py-1 rounded-lg bg-electric/10 text-electric capitalize">${product.category}</span>
+        <div class="flex items-center gap-1">${stars}<span class="text-xs text-gray-400 ml-1">${product.rating} (${product.reviews})</span></div>
+      </div>
+      <h1 class="font-heading text-2xl font-bold text-white mb-4">${product.title}</h1>
+      <p class="text-gray-400 text-sm leading-relaxed mb-6">${product.desc}</p>
+
+      <div class="glass-card rounded-xl p-4 mb-4 flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-electric/20 to-purple-500/20 flex items-center justify-center text-sm font-bold text-electric">${product.seller[0].toUpperCase()}</div>
+        <div class="flex-1">
+          <p class="text-sm font-medium text-white">${product.seller}</p>
+          <p class="text-[11px] text-gray-500">Verified Seller</p>
+        </div>
+        <span class="badge-trust text-[10px] px-2 py-0.5 rounded-full"><i class="fas fa-shield-halved mr-1"></i>Trusted</span>
+      </div>
+
+      <div class="flex items-center gap-3 p-4 rounded-xl bg-electric/5 border border-electric/10 mb-6">
+        <i class="fas fa-shield-halved text-electric text-lg"></i>
+        <div>
+          <p class="text-sm text-white font-medium">Escrow Protection</p>
+          <p class="text-xs text-gray-500">Your payment is secured until you confirm delivery</p>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <p class="text-xs text-gray-500">Price</p>
+          <p class="stat-num text-3xl text-electric">${product.price} <span class="text-lg">π</span></p>
+        </div>
+      </div>
+
+      <button onclick="buyWithEscrow(${product.id})" class="w-full glow-btn py-3.5 rounded-xl text-sm font-semibold">
+        <i class="fas fa-lock mr-2"></i>Buy with Escrow
+      </button>
+    </div>
+  `;
+}
+
+function buyWithEscrow(productId) {
+  const product = PRODUCTS.find(p => p.id === productId);
+  if (!product) return;
+  document.getElementById('esc-title').value = product.title;
+  document.getElementById('esc-amount').value = product.price;
+  document.getElementById('esc-category').value = product.category;
+  document.getElementById('esc-seller').value = '@' + product.seller;
+  navigateTo('create-escrow');
+  showToast('Product details loaded into escrow form', 'info');
+}
+
+/* ======================== CREATE ESCROW ======================== */
+function createEscrow() {
+  const title = document.getElementById('esc-title').value.trim();
+  const amount = parseFloat(document.getElementById('esc-amount').value);
+  const category = document.getElementById('esc-category').value;
+  const seller = document.getElementById('esc-seller').value.trim();
+  const buyer = document.getElementById('esc-buyer').value.trim();
+  const desc = document.getElementById('esc-desc').value.trim();
+
+  if (!title) { showToast('Please enter a transaction title', 'error'); return; }
+  if (!amount || amount <= 0) { showToast('Please enter a valid amount', 'error'); return; }
+  if (APP.user.role === 'buyer' && !seller) { showToast('Please enter seller username', 'error'); return; }
+  if (APP.user.role === 'seller' && !buyer) { showToast('Please enter buyer username', 'error'); return; }
+
+  // Show confirmation modal
+  showModal(`
+    <div class="text-center">
+      <div class="w-16 h-16 rounded-2xl bg-electric/10 flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-shield-halved text-electric text-2xl"></i>
+      </div>
+      <h3 class="font-heading text-xl font-bold text-white mb-2">Confirm Escrow</h3>
+      <p class="text-sm text-gray-400 mb-6">You are about to lock <strong class="text-electric">${amount} π</strong> in escrow for "${title}"</p>
+      <div class="glass-card rounded-xl p-4 mb-6 text-left space-y-2">
+        <div class="flex justify-between text-sm"><span class="text-gray-500">Title</span><span class="text-white">${title}</span></div>
+        <div class="flex justify-between text-sm"><span class="text-gray-500">Amount</span><span class="text-electric font-medium">${amount} π</span></div>
+        <div class="flex justify-between text-sm"><span class="text-gray-500">Category</span><span class="text-white capitalize">${category}</span></div>
+        <div class="flex justify-between text-sm"><span class="text-gray-500">Fee (1%)</span><span class="text-white">${(amount*0.01).toFixed(2)} π</span></div>
+        <div class="border-t border-white/5 pt-2 flex justify-between text-sm"><span class="text-gray-500">Total</span><span class="text-electric font-bold">${(amount*1.01).toFixed(2)} π</span></div>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="closeModal()" class="flex-1 py-3 rounded-xl text-sm font-medium text-gray-400 border border-white/10 hover:border-white/20 transition">Cancel</button>
+        <button onclick="confirmEscrow()" class="flex-1 glow-btn py-3 rounded-xl text-sm font-semibold">Confirm</button>
+      </div>
+    </div>
+  `);
+}
+
+function confirmEscrow() {
+  closeModal();
+  showToast('Escrow created successfully! Funds locked.', 'success');
+  // Add to escrows
+  const newEsc = {
+    id: 'ESC-' + (1026 + Math.floor(Math.random()*100)),
+    title: document.getElementById('esc-title').value,
+    amount: parseFloat(document.getElementById('esc-amount').value),
+    status: 'hold',
+    seller: APP.user.role === 'buyer' ? document.getElementById('esc-seller').value.replace('@','') : APP.user.username,
+    buyer: APP.user.role === 'seller' ? document.getElementById('esc-buyer').value.replace('@','') : APP.user.username,
+    created: 'Just now',
+    category: document.getElementById('esc-category').value,
+    hash: '0x' + Math.random().toString(16).substr(2,4) + '...' + Math.random().toString(16).substr(2,4)
+  };
+  ESCROWS.unshift(newEsc);
+  // Clear form
+  ['esc-title','esc-amount','esc-seller','esc-buyer','esc-desc'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  setTimeout(() => navigateTo('escrow-detail', newEsc), 800);
+}
+
+/* ======================== ESCROW DETAIL ======================== */
+function renderEscrowDetail(escrow) {
+  if (!escrow) escrow = ESCROWS[0];
+  APP.selectedEscrow = escrow;
+  const container = document.getElementById('escrow-detail-content');
+
+  const steps = ['Created','Funds Locked','Shipped','Completed'];
+  const statusIdx = { hold:1, shipped:2, completed:3, released:3, disputed:2 };
+  const currentStep = statusIdx[escrow.status] || 0;
+
+  const stepIcons = ['fa-file-invoice','fa-lock','fa-truck','fa-check-circle'];
+  const stepColors = ['text-electric','text-yellow-400','text-blue-400','text-green-400'];
+
+  container.innerHTML = `
+    <div class="glass-card rounded-2xl p-6 mb-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <div class="flex items-center gap-3 mb-1">
+            <h2 class="font-heading text-xl font-bold text-white">${escrow.title}</h2>
+            <span class="text-[11px] px-2.5 py-1 rounded-lg status-${escrow.status} font-medium">${escrow.status.toUpperCase()}</span>
+          </div>
+          <p class="text-sm text-gray-500 font-mono">${escrow.id}</p>
+        </div>
+        <div class="text-right">
+          <p class="stat-num text-2xl text-electric">${escrow.amount} π</p>
+          <p class="text-xs text-gray-500">Escrow Amount</p>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="flex items-center justify-between mb-8 px-4">
+        ${steps.map((step, i) => `
+          <div class="flex flex-col items-center relative flex-1">
+            <div class="step-icon ${i <= currentStep ? 'bg-electric/15 border border-electric/30' : 'bg-white/5 border border-white/10'} mb-2 transition-all">
+              <i class="fas ${stepIcons[i]} ${i <= currentStep ? stepColors[i] : 'text-gray-600'}"></i>
+            </div>
+            <p class="text-[11px] ${i <= currentStep ? 'text-white font-medium' : 'text-gray-600'} text-center">${step}</p>
+            ${i < 3 ? `<div class="absolute top-6 left-1/2 w-full h-0.5 ${i < currentStep ? 'bg-electric/30' : 'bg-white/5'} -z-10"></div>` : ''}
+          </div>
+        `).join('')}
+      </div>
+
+      <!-- Details -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div class="p-4 rounded-xl bg-white/3 border border-white/5">
+          <p class="text-xs text-gray-500 mb-1">Seller</p>
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-full bg-electric/10 flex items-center justify-center text-xs font-bold text-electric">${escrow.seller[0].toUpperCase()}</div>
+            <span class="text-sm text-white font-medium">${escrow.seller}</span>
+          </div>
+        </div>
+        <div class="p-4 rounded-xl bg-white/3 border border-white/5">
+          <p class="text-xs text-gray-500 mb-1">Buyer</p>
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-full bg-purple-500/10 flex items-center justify-center text-xs font-bold text-purple-400">${escrow.buyer[0].toUpperCase()}</div>
+            <span class="text-sm text-white font-medium">${escrow.buyer}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 rounded-xl bg-white/3 border border-white/5 mb-6">
+        <div class="flex items-center justify-between">
+          <div><p class="text-xs text-gray-500 mb-1">Transaction Hash</p><p class="text-sm text-white font-mono">${escrow.hash}</p></div>
+          <button class="text-xs text-electric hover:text-cyan transition" onclick="showToast('Hash copied to clipboard','success')"><i class="fas fa-copy mr-1"></i>Copy</button>
+        </div>
+      </div>
+
+      ${escrow.status === 'shipped' ? `
+        <button onclick="confirmReceived()" class="w-full py-3 rounded-xl text-sm font-semibold bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20 transition mb-3">
+          <i class="fas fa-check mr-2"></i>Confirm Received
+        </button>
+      ` : ''}
+
+      ${escrow.status === 'hold' || escrow.status === 'shipped' ? `
+        <button onclick="openDisputeFromEscrow()" class="w-full py-3 rounded-xl text-sm font-medium text-red-400 border border-red-500/15 hover:bg-red-500/5 transition">
+          <i class="fas fa-gavel mr-2"></i>Open Dispute
+        </button>
+      ` : ''}
+    </div>
+
+    <!-- Activity Feed -->
+    <div class="glass-card rounded-2xl p-6">
+      <h3 class="font-heading font-semibold text-white mb-4">Activity Feed</h3>
+      <div class="space-y-4">
+        <div class="flex gap-3">
+          <div class="w-8 h-8 rounded-lg bg-electric/10 flex items-center justify-center mt-0.5"><i class="fas fa-lock text-electric text-xs"></i></div>
+          <div><p class="text-sm text-white">Funds locked in escrow</p><p class="text-[11px] text-gray-500">${escrow.created}</p></div>
+        </div>
+        <div class="flex gap-3">
+          <div class="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center mt-0.5"><i class="fas fa-file-invoice text-green-400 text-xs"></i></div>
+          <div><p class="text-sm text-white">Escrow created by ${escrow.buyer}</p><p class="text-[11px] text-gray-500">${escrow.created}</p></div>
+        </div>
+        ${escrow.status === 'shipped' ? `
+        <div class="flex gap-3">
+          <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center mt-0.5"><i class="fas fa-truck text-blue-400 text-xs"></i></div>
+          <div><p class="text-sm text-white">Seller marked as shipped</p><p class="text-[11px] text-gray-500">12h ago</p></div>
+        </div>` : ''}
+        ${escrow.status === 'completed' || escrow.status === 'released' ? `
+        <div class="flex gap-3">
+          <div class="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center mt-0.5"><i class="fas fa-check text-green-400 text-xs"></i></div>
+          <div><p class="text-sm text-white">Funds released to seller</p><p class="text-[11px] text-gray-500">Completed</p></div>
+        </div>` : ''}
+        ${escrow.status === 'disputed' ? `
+        <div class="flex gap-3">
+          <div class="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center mt-0.5"><i class="fas fa-gavel text-red-400 text-xs"></i></div>
+          <div><p class="text-sm text-white">Dispute opened</p><p class="text-[11px] text-gray-500">Under review by admin</p></div>
+        </div>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function confirmReceived() {
+  showModal(`
+    <div class="text-center">
+      <div class="w-16 h-16 rounded-2xl bg-green-500/10 flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-check text-green-400 text-2xl"></i>
+      </div>
+      <h3 class="font-heading text-xl font-bold text-white mb-2">Confirm Receipt</h3>
+      <p class="text-sm text-gray-400 mb-6">Are you sure you received the item? This will release <strong class="text-electric">${APP.selectedEscrow?.amount} π</strong> to the seller.</p>
+      <div class="flex gap-3">
+        <button onclick="closeModal()" class="flex-1 py-3 rounded-xl text-sm font-medium text-gray-400 border border-white/10 hover:border-white/20 transition">Cancel</button>
+        <button onclick="doConfirmReceived()" class="flex-1 py-3 rounded-xl text-sm font-semibold bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20 transition">Confirm</button>
+      </div>
+    </div>
+  `);
+}
+
+function doConfirmReceived() {
+  closeModal();
+  if (APP.selectedEscrow) APP.selectedEscrow.status = 'completed';
+  showToast('Payment released to seller!', 'success');
+  renderEscrowDetail(APP.selectedEscrow);
+}
+
+function openDisputeFromEscrow() {
+  if (APP.selectedEscrow) {
+    document.getElementById('disp-escrow').value = APP.selectedEscrow.id;
+  }
+  navigateTo('disputes');
+}
+
+/* ======================== DISPUTES ======================== */
+function renderDisputes() {
+  const container = document.getElementById('dispute-list');
+  container.innerHTML = DISPUTES_DATA.map(d => `
+    <div class="glass-card rounded-2xl p-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl ${d.status==='open'?'bg-red-500/10':'bg-yellow-500/10'} flex items-center justify-center">
+            <i class="fas fa-exclamation ${d.status==='open'?'text-red-400':'text-yellow-400'}"></i>
+          </div>
+          <div>
+            <h4 class="text-sm font-medium text-white">${d.id} — ${d.reason}</h4>
+            <p class="text-[11px] text-gray-500">Escrow: ${d.escrowId} · ${d.created}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] px-2.5 py-1 rounded-lg ${d.status==='open'?'bg-red-500/10 text-red-400 border border-red-500/20':d.status==='mediating'?'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20':'bg-green-500/10 text-green-400 border border-green-500/20'} font-medium capitalize">${d.status}</span>
+          <span class="text-[10px] px-2.5 py-1 rounded-lg ${d.priority==='high'?'bg-red-500/10 text-red-400':d.priority==='medium'?'bg-yellow-500/10 text-yellow-400':'bg-white/5 text-gray-400'} font-medium capitalize">${d.priority}</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4 text-xs text-gray-500">
+        <span><i class="fas fa-user mr-1"></i>${d.user} vs ${d.against}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function submitDispute() {
+  const escrowId = document.getElementById('disp-escrow').value.trim();
+  const reason = document.getElementById('disp-reason').value;
+  const desc = document.getElementById('disp-desc').value.trim();
+
+  if (!escrowId) { showToast('Please enter the Escrow ID', 'error'); return; }
+  if (!desc) { showToast('Please describe the issue', 'error'); return; }
+
+  DISPUTES_DATA.unshift({
+    id: 'DSP-' + (110 + Math.floor(Math.random()*50)),
+    escrowId: escrowId,
+    reason: reason,
+    status: 'open',
+    priority: 'medium',
+    created: 'Just now',
+    user: APP.user.username,
+    against: 'counterparty'
+  });
+
+  showToast('Dispute submitted successfully', 'success');
+  renderDisputes();
+  ['disp-escrow','disp-desc'].forEach(id => { document.getElementById(id).value = ''; });
+}
+
+/* ======================== ADMIN ======================== */
+function initAdmin() {
+  initAdminChart();
+  renderAdminUsers();
+}
+
+function initAdminChart() {
+  if (APP.charts.admin) APP.charts.admin.destroy();
+  const ctx = document.getElementById('adminChart');
+  if (!ctx) return;
+  APP.charts.admin = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+      datasets: [{
+        label: 'Volume (π)',
+        data: [45000,62000,58000,89000,78000,95000],
+        backgroundColor: 'rgba(0,212,255,0.2)',
+        borderColor: '#00d4ff',
+        borderWidth: 1,
+        borderRadius: 8,
+        barThickness: 24
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#4a5568', font: { size: 11 } } },
+        y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#4a5568', font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+function renderAdminUsers() {
+  const tbody = document.getElementById('admin-users');
+  tbody.innerHTML = ADMIN_USERS.map(u => `
+    <tr class="border-b border-white/5">
+      <td class="py-3">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-electric/10 flex items-center justify-center text-xs font-bold text-electric">${u.username[0].toUpperCase()}</div>
+          <span class="text-white">${u.username}</span>
+        </div>
+      </td>
+      <td class="py-3 text-gray-400">${u.role}</td>
+      <td class="py-3 text-gray-400">${u.txns}</td>
+      <td class="py-3"><span class="text-yellow-400"><i class="fas fa-star text-[10px] mr-1"></i>${u.rep}</span></td>
+      <td class="py-3"><span class="text-[11px] px-2 py-1 rounded-lg ${u.status==='active'?'bg-green-500/10 text-green-400 border border-green-500/20':u.status==='flagged'?'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20':'bg-red-500/10 text-red-400 border border-red-500/20'} capitalize">${u.status}</span></td>
+      <td class="py-3"><button class="text-xs text-electric hover:text-cyan transition" onclick="showToast('User action menu (demo)','info')"><i class="fas fa-ellipsis"></i></button></td>
+    </tr>
+  `).join('');
+}
+
+/* ======================== PROFILE ======================== */
+function updateProfile() {
+  document.getElementById('profile-name').textContent = APP.user.username;
+  document.getElementById('profile-avatar').textContent = APP.user.username[0].toUpperCase();
+}
+
+/* ======================== UI HELPERS ======================== */
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':type==='error'?'exclamation-circle':'info-circle'} mr-2"></i>${message}`;
+  container.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(80px)'; toast.style.transition = 'all .3s'; setTimeout(() => toast.remove(), 300); }, 3500);
+}
+
+function showModal(content) {
+  const container = document.getElementById('modal-container');
+  container.innerHTML = `<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="glass-strong rounded-2xl p-6 max-w-md w-full mx-4" style="animation:slideUp .3s ease">${content}</div></div>`;
+}
+
+function closeModal() {
+  document.getElementById('modal-container').innerHTML = '';
+}
+
+/* ======================== PARTICLE SYSTEM ======================== */
+function initParticles() {
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  let w, h;
+
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Create particles
+  for (let i = 0; i < 60; i++) {
+    particles.push({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      r: Math.random() * 1.5 + 0.5,
+      alpha: Math.random() * 0.4 + 0.1,
+      color: Math.random() > 0.7 ? '99,102,241' : '0,212,255'
+    });
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, w, h);
+
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0) p.x = w;
+      if (p.x > w) p.x = 0;
+      if (p.y < 0) p.y = h;
+      if (p.y > h) p.y = 0;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${p.color},${p.alpha})`;
+      ctx.fill();
+    });
+
+    // Draw connections
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 150) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(0,212,255,${0.06 * (1 - dist / 150)})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+
+    requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+/* ======================== STAT COUNTER ANIMATION ======================== */
+function animateCounters() {
+  document.querySelectorAll('[data-count]').forEach(el => {
+    const target = parseInt(el.dataset.count);
+    const duration = 2000;
+    const start = performance.now();
+    const prefix = target >= 1000 ? '' : '';
+
+    function update(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.floor(target * eased);
+
+      if (target >= 100000) {
+        el.textContent = (current / 1000).toFixed(0) + 'K+';
+      } else if (target >= 1000) {
+        el.textContent = (current / 1000).toFixed(1) + 'K+';
+      } else {
+        el.textContent = current + (el.closest('.glass-card')?.querySelector('.text-gray-500')?.textContent.includes('%') ? '%' : '+');
+      }
+
+      if (progress < 1) requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+  });
+}
+
+/* ======================== SIDEBAR TOGGLE ======================== */
+document.getElementById('menu-toggle')?.addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
+});
+document.getElementById('sidebar-close')?.addEventListener('click', () => {
+  document.getElementById('sidebar').classList.remove('open');
+});
+
+/* ======================== NOTIFICATIONS ======================== */
+document.getElementById('notif-btn')?.addEventListener('click', () => {
+  showModal(`
+    <div>
+      <h3 class="font-heading text-lg font-bold text-white mb-4">Notifications</h3>
+      <div class="space-y-3 max-h-80 overflow-y-auto">
+        <div class="flex gap-3 p-3 rounded-xl bg-electric/5 border border-electric/10">
+          <div class="w-8 h-8 rounded-lg bg-electric/10 flex items-center justify-center flex-shrink-0"><i class="fas fa-check text-electric text-xs"></i></div>
+          <div><p class="text-sm text-white">Escrow #1024 completed</p><p class="text-[11px] text-gray-500">2 min ago</p></div>
+        </div>
+        <div class="flex gap-3 p-3 rounded-xl bg-blue-500/5 border border-blue-500/10">
+          <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0"><i class="fas fa-truck text-blue-400 text-xs"></i></div>
+          <div><p class="text-sm text-white">Order #1021 has been shipped</p><p class="text-[11px] text-gray-500">1 hr ago</p></div>
+        </div>
+        <div class="flex gap-3 p-3 rounded-xl bg-yellow-500/5 border border-yellow-500/10">
+          <div class="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center flex-shrink-0"><i class="fas fa-star text-yellow-400 text-xs"></i></div>
+          <div><p class="text-sm text-white">New 5-star review received</p><p class="text-[11px] text-gray-500">3 hrs ago</p></div>
+        </div>
+        <div class="flex gap-3 p-3 rounded-xl bg-white/3 border border-white/5">
+          <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0"><i class="fas fa-bell text-gray-500 text-xs"></i></div>
+          <div><p class="text-sm text-white">Price drop on wishlist item</p><p class="text-[11px] text-gray-500">1 day ago</p></div>
+        </div>
+      </div>
+      <button onclick="closeModal()" class="w-full mt-4 py-2.5 rounded-xl text-sm text-gray-400 border border-white/10 hover:border-white/20 transition">Close</button>
+    </div>
+  `);
+});
+
+/* ======================== INIT ======================== */
+function init() {
+  initParticles();
+
+  // Animate counters when landing page is visible
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { animateCounters(); observer.disconnect(); } });
+  });
+  document.querySelectorAll('[data-count]').forEach(el => observer.observe(el));
+
+  // Keyboard navigation for accessibility
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+  });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
