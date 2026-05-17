@@ -7,12 +7,17 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest"></script>
+
 <!-- Pi Network SDK -->
 <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 <script>
-  // Inisialisasi Pi SDK
-  Pi.init({ version: "2.0", sandbox: true }); // Ganti sandbox: false untuk produksi
+  // Inisialisasi Pi SDK (Ganti sandbox: false jika sudah mainnet)
+  Pi.init({ version: "2.0", sandbox: true }); 
 </script>
+
+<!-- Supabase JS Client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
 tailwind.config={theme:{extend:{colors:{navy:{950:'#050816',900:'#0a0e27',800:'#0f1535',700:'#162044',600:'#1e2a5a'},gold:{500:'#f5a623',400:'#ffc857',300:'#ffd97a',600:'#d4901e'},pi:{500:'#6D28D9',400:'#8B5CF6',300:'#A78BFA'}},fontFamily:{sans:['Inter','sans-serif'],mono:['JetBrains Mono','monospace']}}}}
 </script>
@@ -29,11 +34,7 @@ body{font-family:'Inter',sans-serif;background:#050816;color:#e2e8f0;overflow-x:
 .glass{background:rgba(15,21,53,0.6);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.06)}
 .glass-strong{background:rgba(10,14,39,0.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.08)}
 .glass-pi{background:rgba(109,40,217,0.06);backdrop-filter:blur(16px);border:1px solid rgba(109,40,217,0.2)}
-.glass-gold{background:rgba(245,166,35,0.06);backdrop-filter:blur(16px);border:1px solid rgba(245,166,35,0.15)}
-
 .glow-pi{box-shadow:0 0 20px rgba(109,40,217,0.15)}
-.glow-gold{box-shadow:0 0 20px rgba(245,166,35,0.12)}
-.text-glow-pi{text-shadow:0 0 30px rgba(109,40,217,0.3)}
 
 .gradient-orb{position:fixed;border-radius:50%;filter:blur(100px);pointer-events:none;z-index:0}
 .orb-1{width:300px;height:300px;background:rgba(109,40,217,0.08);top:-100px;right:-100px;animation:orbFloat 20s ease-in-out infinite}
@@ -56,9 +57,6 @@ body{font-family:'Inter',sans-serif;background:#050816;color:#e2e8f0;overflow-x:
 .btn-pi:active{transform:scale(0.97);opacity:0.9}
 .btn-pi::after{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:linear-gradient(transparent,rgba(255,255,255,0.1),transparent);transform:rotate(45deg) translateX(-100%);transition:0.5s}
 .btn-pi:hover::after{transform:rotate(45deg) translateX(100%)}
-
-.btn-gold{background:linear-gradient(135deg,#f5a623,#d4901e);color:#050816;font-weight:600;transition:all 0.2s ease;position:relative;overflow:hidden}
-.btn-gold:active{transform:scale(0.97);opacity:0.9}
 
 .btn-outline{border:1px solid rgba(109,40,217,0.3);color:#8B5CF6;transition:all 0.2s ease}
 .btn-outline:active{background:rgba(109,40,217,0.08);transform:scale(0.97)}
@@ -90,7 +88,6 @@ body{font-family:'Inter',sans-serif;background:#050816;color:#e2e8f0;overflow-x:
 @keyframes statPulse{0%,100%{box-shadow:0 0 0 0 rgba(109,40,217,0.08)}50%{box-shadow:0 0 0 8px rgba(109,40,217,0)}}
 
 .chart-bar{transition:height 0.6s cubic-bezier(0.16,1,0.3,1)}
-
 .notif-dot{width:7px;height:7px;background:#ef4444;border-radius:50%;position:absolute;top:0;right:0;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
 
@@ -99,14 +96,11 @@ body{font-family:'Inter',sans-serif;background:#050816;color:#e2e8f0;overflow-x:
 .bottom-nav-item.active{color:#8B5CF6}
 .bottom-nav-item.active .nav-indicator{opacity:1}
 .nav-indicator{width:4px;height:4px;border-radius:50%;background:#8B5CF6;opacity:0;transition:opacity 0.2s ease}
-
 .contract-card{transition:all 0.2s ease}
 .contract-card:active{transform:scale(0.98);background:rgba(255,255,255,0.02)}
-
 .step-dot{transition:all 0.3s ease}
 .step-dot.active{background:#8B5CF6;transform:scale(1.2)}
 .step-dot.done{background:#22c55e}
-
 .safe-bottom{padding-bottom:calc(env(safe-area-inset-bottom, 0px) + 16px)}
 .safe-top{padding-top:calc(env(safe-area-inset-top, 0px) + 8px)}
 </style>
@@ -125,7 +119,6 @@ body{font-family:'Inter',sans-serif;background:#050816;color:#e2e8f0;overflow-x:
 
 <!-- ==================== LANDING ==================== -->
 <div id="page-landing" class="page active">
-
 <nav id="navbar" class="fixed top-0 w-full z-40 transition-all duration-300 safe-top" style="background:transparent">
   <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
     <a href="#" onclick="showPage('landing')" class="flex items-center gap-2">
@@ -140,7 +133,6 @@ body{font-family:'Inter',sans-serif;background:#050816;color:#e2e8f0;overflow-x:
   </div>
 </nav>
 
-<!-- Hero -->
 <section class="min-h-screen flex items-center pt-16 pb-8">
   <div class="max-w-7xl mx-auto px-4 w-full">
     <div class="fade-up inline-flex items-center gap-2 glass-pi rounded-full px-3 py-1.5 mb-6">
@@ -148,7 +140,7 @@ body{font-family:'Inter',sans-serif;background:#050816;color:#e2e8f0;overflow-x:
       <span class="text-[10px] font-medium text-slate-400">Powered by Pi Network</span>
     </div>
     <h1 class="fade-up fade-up-d1 text-3xl font-bold leading-[1.1] tracking-tight mb-4">
-      Akta Jual Beli<br><span class="bg-gradient-to-r from-pi-300 to-pi-500 bg-clip-text text-transparent text-glow-pi">Digital</span> Secara Legal
+      Akta Jual Beli<br><span class="bg-gradient-to-r from-pi-300 to-pi-500 bg-clip-text text-transparent">Digital</span> Secara Legal
     </h1>
     <p class="fade-up fade-up-d2 text-sm text-slate-400 mb-8 max-w-sm leading-relaxed">
       Buat akta jual beli sah hukum dalam menit. Tanda tangan digital, pembayaran aman menggunakan Pi Network.
@@ -162,7 +154,6 @@ body{font-family:'Inter',sans-serif;background:#050816;color:#e2e8f0;overflow-x:
       </button>
     </div>
 
-    <!-- Hero Card -->
     <div class="fade-up fade-up-d3 glass rounded-2xl p-5 glow-pi mb-6">
       <div class="flex items-center gap-2 mb-4">
         <div class="w-2 h-2 rounded-full bg-red-500"></div>
@@ -186,120 +177,9 @@ body{font-family:'Inter',sans-serif;background:#050816;color:#e2e8f0;overflow-x:
         </div>
       </div>
     </div>
-
-    <!-- Social proof -->
-    <div class="fade-up flex items-center gap-3 mb-12">
-      <div class="flex -space-x-2">
-        <img src="https://picsum.photos/seed/u1/32/32.jpg" class="w-7 h-7 rounded-full border-2 border-navy-950">
-        <img src="https://picsum.photos/seed/u2/32/32.jpg" class="w-7 h-7 rounded-full border-2 border-navy-950">
-        <img src="https://picsum.photos/seed/u3/32/32.jpg" class="w-7 h-7 rounded-full border-2 border-navy-950">
-      </div>
-      <div>
-        <div class="text-pi-400 text-[10px]">★★★★★</div>
-        <p class="text-[10px] text-slate-500">10,000+ Pioneers</p>
-      </div>
-    </div>
   </div>
 </section>
 
-<!-- Stats -->
-<section class="py-6">
-  <div class="max-w-7xl mx-auto px-4">
-    <div class="grid grid-cols-2 gap-3">
-      <div class="glass rounded-xl p-4 text-center"><p class="text-xl font-bold text-pi-400">10K+</p><p class="text-[10px] text-slate-500 mt-1">Akta Dibuat</p></div>
-      <div class="glass rounded-xl p-4 text-center"><p class="text-xl font-bold text-pi-400">99.9%</p><p class="text-[10px] text-slate-500 mt-1">Keamanan</p></div>
-      <div class="glass rounded-xl p-4 text-center"><p class="text-xl font-bold text-pi-400">50+</p><p class="text-[10px] text-slate-500 mt-1">Notaris Partner</p></div>
-      <div class="glass rounded-xl p-4 text-center"><p class="text-xl font-bold text-pi-400">&lt;5mnt</p><p class="text-[10px] text-slate-500 mt-1">Waktu Buat</p></div>
-    </div>
-  </div>
-</section>
-
-<!-- Features -->
-<section class="py-12">
-  <div class="max-w-7xl mx-auto px-4">
-    <p class="text-pi-500 text-[10px] font-semibold tracking-widest uppercase mb-2">Fitur Unggulan</p>
-    <h2 class="text-xl font-bold mb-6">Semua yang Anda butuhkan</h2>
-    <div class="space-y-3">
-      <div class="glass rounded-xl p-4 card-hover flex items-start gap-3">
-        <div class="w-10 h-10 rounded-lg bg-pi-500/10 flex items-center justify-center flex-shrink-0"><i data-lucide="circle-dollar-sign" class="w-5 h-5 text-pi-400"></i></div>
-        <div><h3 class="text-sm font-semibold mb-1">Pembayaran Pi</h3><p class="text-[11px] text-slate-400 leading-relaxed">Bayar pembuatan akta langsung menggunakan Pi Network dengan aman.</p></div>
-      </div>
-      <div class="glass rounded-xl p-4 card-hover flex items-start gap-3">
-        <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0"><i data-lucide="qr-code" class="w-5 h-5 text-blue-500"></i></div>
-        <div><h3 class="text-sm font-semibold mb-1">Verifikasi QR Code</h3><p class="text-[11px] text-slate-400 leading-relaxed">QR code unik untuk verifikasi keaslian dokumen.</p></div>
-      </div>
-      <div class="glass rounded-xl p-4 card-hover flex items-start gap-3">
-        <div class="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0"><i data-lucide="shield" class="w-5 h-5 text-green-500"></i></div>
-        <div><h3 class="text-sm font-semibold mb-1">Login Pi SDK</h3><p class="text-[11px] text-slate-400 leading-relaxed">Autentikasi mulus tanpa perlu membuat password baru.</p></div>
-      </div>
-      <div class="glass rounded-xl p-4 card-hover flex items-start gap-3">
-        <div class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0"><i data-lucide="file-down" class="w-5 h-5 text-purple-500"></i></div>
-        <div><h3 class="text-sm font-semibold mb-1">Export PDF Legal</h3><p class="text-[11px] text-slate-400 leading-relaxed">Download akta PDF siap cetak, sah hukum.</p></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- How It Works -->
-<section class="py-12">
-  <div class="max-w-7xl mx-auto px-4">
-    <p class="text-pi-500 text-[10px] font-semibold tracking-widest uppercase mb-2">Cara Kerja</p>
-    <h2 class="text-xl font-bold mb-6">3 Langkah Mudah</h2>
-    <div class="space-y-4">
-      <div class="flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl glass-pi flex items-center justify-center flex-shrink-0"><span class="text-lg font-bold text-pi-400">1</span></div>
-        <div><h3 class="text-sm font-semibold">Login & Isi Data</h3><p class="text-[11px] text-slate-400">Masuk dengan Pi, lalu lengkapi informasi transaksi.</p></div>
-      </div>
-      <div class="ml-6 w-px h-4 bg-white/10"></div>
-      <div class="flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl glass-pi flex items-center justify-center flex-shrink-0"><span class="text-lg font-bold text-pi-400">2</span></div>
-        <div><h3 class="text-sm font-semibold">Bayar dengan Pi</h3><p class="text-[11px] text-slate-400">Proses pembayaran langsung dari dompet Pi Anda.</p></div>
-      </div>
-      <div class="ml-6 w-px h-4 bg-white/10"></div>
-      <div class="flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl glass-pi flex items-center justify-center flex-shrink-0"><span class="text-lg font-bold text-pi-400">3</span></div>
-        <div><h3 class="text-sm font-semibold">Akta Sah & Legal!</h3><p class="text-[11px] text-slate-400">Akta terverifikasi, siap download PDF.</p></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Pricing -->
-<section class="py-12">
-  <div class="max-w-7xl mx-auto px-4">
-    <p class="text-pi-500 text-[10px] font-semibold tracking-widest uppercase mb-2">Harga</p>
-    <h2 class="text-xl font-bold mb-6">Pilih Paket Anda</h2>
-    <div class="space-y-3">
-      <div class="glass rounded-xl p-5 card-hover">
-        <p class="text-xs text-slate-500 font-medium">Starter</p>
-        <p class="text-2xl font-bold mt-1">Gratis</p>
-        <p class="text-[10px] text-slate-500">3 akta/bulan</p>
-        <div class="h-px bg-white/5 my-4"></div>
-        <ul class="space-y-2 text-[11px] text-slate-400 mb-5">
-          <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3 text-green-500"></i>3 Akta/bulan</li>
-          <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3 text-green-500"></i>Tanda tangan digital</li>
-          <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3 text-green-500"></i>Download PDF</li>
-        </ul>
-        <button onclick="authenticatePi()" class="btn-outline w-full py-2.5 rounded-xl text-xs">Mulai Gratis</button>
-      </div>
-      <div class="glass-pi rounded-xl p-5 card-hover glow-pi relative">
-        <div class="absolute -top-2 right-4 bg-gradient-to-r from-pi-500 to-pi-400 text-white text-[9px] font-bold px-3 py-0.5 rounded-full">POPULER</div>
-        <p class="text-xs text-pi-300 font-medium">Professional</p>
-        <p class="text-2xl font-bold mt-1">2 π<span class="text-sm text-slate-500">/bln</span></p>
-        <p class="text-[10px] text-slate-500">Unlimited akta</p>
-        <div class="h-px bg-pi-500/15 my-4"></div>
-        <ul class="space-y-2 text-[11px] text-slate-300 mb-5">
-          <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3 text-pi-400"></i>Unlimited Akta</li>
-          <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3 text-pi-400"></i>QR Verification</li>
-          <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3 text-pi-400"></i>Notaris Partner</li>
-        </ul>
-        <button onclick="authenticatePi()" class="btn-pi w-full py-2.5 rounded-xl text-xs">Bayar dengan Pi</button>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- CTA -->
 <section class="py-12">
   <div class="max-w-7xl mx-auto px-4">
     <div class="glass-pi rounded-2xl p-8 text-center glow-pi">
@@ -310,49 +190,21 @@ body{font-family:'Inter',sans-serif;background:#050816;color:#e2e8f0;overflow-x:
   </div>
 </section>
 
-<!-- Footer -->
 <footer class="border-t border-white/5 py-8 safe-bottom">
   <div class="max-w-7xl mx-auto px-4">
     <div class="flex items-center gap-2 mb-4">
       <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-pi-500 to-pi-400 flex items-center justify-center"><i data-lucide="circle-dollar-sign" class="w-4 h-4 text-white"></i></div>
       <span class="font-bold text-sm">PiHUB</span>
     </div>
-    <p class="text-[10px] text-slate-600 mb-4">Platform akta jual beli digital terpercaya di Indonesia.</p>
-    <div class="flex gap-4 mb-4">
-      <a href="#" class="text-slate-600 hover:text-white"><i data-lucide="twitter" class="w-4 h-4"></i></a>
-      <a href="#" class="text-slate-600 hover:text-white"><i data-lucide="github" class="w-4 h-4"></i></a>
-      <a href="#" class="text-slate-600 hover:text-white"><i data-lucide="linkedin" class="w-4 h-4"></i></a>
-    </div>
     <p class="text-[9px] text-slate-700">© 2024 PiHUB. All rights reserved.</p>
   </div>
 </footer>
-</div>
-
-<!-- ==================== LOGIN (Pi SDK Placeholder) ==================== -->
-<div id="page-login" class="page">
-  <div class="min-h-screen flex flex-col justify-center px-5 py-12 safe-top">
-    <div class="mb-8 text-center">
-      <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-pi-500 to-pi-400 flex items-center justify-center mx-auto mb-6"><i data-lucide="circle-dollar-sign" class="w-8 h-8 text-white"></i></div>
-      <h1 class="text-2xl font-bold">Selamat Datang Pioneer 👋</h1>
-      <p class="text-xs text-slate-500 mt-1">Masuk menggunakan akun Pi Network Anda</p>
-    </div>
-    <div class="space-y-4">
-      <div class="glass-pi rounded-xl p-6 text-center">
-        <p class="text-sm text-slate-300 mb-4">Klik tombol di bawah untuk otentikasi via Pi App</p>
-        <button onclick="authenticatePi()" class="btn-pi w-full py-3.5 rounded-xl text-sm flex items-center justify-center gap-2">
-          <i data-lucide="log-in" class="w-5 h-5"></i> Authenticate with Pi
-        </button>
-      </div>
-    </div>
-    <p class="text-center text-[10px] text-slate-600 mt-6 safe-bottom">Dengan masuk, Anda menyetujui Ketentuan Layanan PiHUB</p>
-  </div>
 </div>
 
 <!-- ==================== DASHBOARD LAYOUT ==================== -->
 <div id="dashboard-layout" class="page" style="display:none">
 <div class="flex flex-col min-h-screen">
 
-<!-- Top Bar -->
 <header class="sticky top-0 z-30 glass-strong border-b border-white/5 px-4 py-3 flex items-center justify-between safe-top no-print">
   <div class="flex items-center gap-3">
     <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-pi-500 to-pi-400 flex items-center justify-center"><i data-lucide="circle-dollar-sign" class="w-4 h-4 text-white"></i></div>
@@ -363,75 +215,36 @@ body{font-family:'Inter',sans-serif;background:#050816;color:#e2e8f0;overflow-x:
       <i data-lucide="bell" class="w-5 h-5 text-slate-400"></i>
       <span class="notif-dot"></span>
     </button>
-    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-pi-500 to-pi-400 flex items-center justify-center text-white text-xs font-bold" onclick="showDashboard('profile')" id="avatar-initial">AR</div>
+    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-pi-500 to-pi-400 flex items-center justify-center text-white text-xs font-bold" onclick="showDashboard('profile')" id="avatar-initial">PI</div>
   </div>
 </header>
 
-<!-- Content -->
 <main class="flex-1 overflow-y-auto pb-24" id="dashboard-content">
 
 <!-- ===== Dashboard Home ===== -->
 <div id="dash-dashboard" class="dash-page p-4">
   <div class="mb-5">
     <p class="text-xs text-slate-500">Selamat datang, Pioneer</p>
-    <h1 class="text-lg font-bold" id="dash-user-name">Ahmad Rizky 👋</h1>
+    <h1 class="text-lg font-bold" id="dash-user-name">User 👋</h1>
   </div>
-
   <div class="grid grid-cols-2 gap-3 mb-5">
     <div class="glass rounded-xl p-4 stat-pulse">
       <div class="w-8 h-8 rounded-lg bg-pi-500/10 flex items-center justify-center mb-3"><i data-lucide="file-text" class="w-4 h-4 text-pi-400"></i></div>
-      <p class="text-xl font-bold">24</p><p class="text-[10px] text-slate-500">Total Akta</p>
+      <p class="text-xl font-bold">1</p><p class="text-[10px] text-slate-500">Total Akta</p>
     </div>
     <div class="glass rounded-xl p-4">
       <div class="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center mb-3"><i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i></div>
-      <p class="text-xl font-bold">18</p><p class="text-[10px] text-slate-500">Aktif</p>
+      <p class="text-xl font-bold">0</p><p class="text-[10px] text-slate-500">Aktif</p>
     </div>
     <div class="glass rounded-xl p-4">
       <div class="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center mb-3"><i data-lucide="clock" class="w-4 h-4 text-yellow-500"></i></div>
-      <p class="text-xl font-bold">4</p><p class="text-[10px] text-slate-500">Pending</p>
+      <p class="text-xl font-bold">1</p><p class="text-[10px] text-slate-500">Pending</p>
     </div>
     <div class="glass rounded-xl p-4">
       <div class="w-8 h-8 rounded-lg bg-pi-500/10 flex items-center justify-center mb-3"><i data-lucide="wallet" class="w-4 h-4 text-pi-400"></i></div>
-      <p class="text-lg font-bold text-pi-400">125 π</p><p class="text-[10px] text-slate-500">Nilai Transaksi</p>
+      <p class="text-lg font-bold text-pi-400">1 π</p><p class="text-[10px] text-slate-500">Transaksi</p>
     </div>
   </div>
-
-  <!-- Mini Chart -->
-  <div class="glass rounded-xl p-4 mb-5">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="text-sm font-semibold">Statistik</h3>
-      <span class="text-[10px] text-slate-500">6 bulan</span>
-    </div>
-    <div class="flex items-end gap-2 h-28">
-      <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-pi-500/15 rounded-t chart-bar" style="height:40%"></div><span class="text-[8px] text-slate-600">J</span></div>
-      <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-pi-500/20 rounded-t chart-bar" style="height:65%"></div><span class="text-[8px] text-slate-600">F</span></div>
-      <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-pi-500/15 rounded-t chart-bar" style="height:45%"></div><span class="text-[8px] text-slate-600">M</span></div>
-      <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-pi-500/25 rounded-t chart-bar" style="height:80%"></div><span class="text-[8px] text-slate-600">A</span></div>
-      <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-pi-500/20 rounded-t chart-bar" style="height:55%"></div><span class="text-[8px] text-slate-600">M</span></div>
-      <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-gradient-to-t from-pi-500 to-pi-400 rounded-t chart-bar" style="height:95%"></div><span class="text-[8px] text-pi-400 font-medium">J</span></div>
-    </div>
-  </div>
-
-  <!-- Recent Activity -->
-  <div class="glass rounded-xl p-4 mb-5">
-    <h3 class="text-sm font-semibold mb-3">Aktivitas</h3>
-    <div class="space-y-3">
-      <div class="flex items-start gap-2.5">
-        <div class="w-7 h-7 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0"><i data-lucide="check" class="w-3.5 h-3.5 text-green-500"></i></div>
-        <div><p class="text-[11px]">Akta <span class="text-pi-400 font-medium">#0891</span> dibayar & diverifikasi</p><p class="text-[9px] text-slate-500">2 menit lalu</p></div>
-      </div>
-      <div class="flex items-start gap-2.5">
-        <div class="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0"><i data-lucide="file-plus" class="w-3.5 h-3.5 text-blue-500"></i></div>
-        <div><p class="text-[11px]">Akta baru <span class="text-pi-400 font-medium">#0892</span></p><p class="text-[9px] text-slate-500">15 menit lalu</p></div>
-      </div>
-      <div class="flex items-start gap-2.5">
-        <div class="w-7 h-7 rounded-lg bg-yellow-500/10 flex items-center justify-center flex-shrink-0"><i data-lucide="circle-dollar-sign" class="w-3.5 h-3.5 text-yellow-500"></i></div>
-        <div><p class="text-[11px]">Menunggu pembayaran Pi <span class="text-pi-400 font-medium">#0890</span></p><p class="text-[9px] text-slate-500">1 jam lalu</p></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Recent as Cards -->
   <div class="mb-4">
     <div class="flex items-center justify-between mb-3">
       <h3 class="text-sm font-semibold">Akta Terbaru</h3>
@@ -447,8 +260,6 @@ body{font-family:'Inter',sans-serif;background:#050816;color:#e2e8f0;overflow-x:
     <h1 class="text-lg font-bold">Buat Akta Baru</h1>
     <p class="text-[11px] text-slate-500">Isi formulir untuk membuat akta (Bayar dengan Pi)</p>
   </div>
-
-  <!-- Step indicators -->
   <div class="flex items-center justify-center gap-2 mb-6" id="step-dots">
     <div class="step-dot active w-2.5 h-2.5 rounded-full" data-step="1"></div>
     <div class="w-8 h-px bg-white/10"></div>
@@ -457,14 +268,12 @@ body{font-family:'Inter',sans-serif;background:#050816;color:#e2e8f0;overflow-x:
     <div class="step-dot w-2.5 h-2.5 rounded-full bg-white/10" data-step="3"></div>
   </div>
 
-  <!-- Step 1 -->
   <div id="step-1" class="step-content space-y-4">
     <div class="glass rounded-xl p-4">
       <h3 class="text-sm font-semibold mb-3 flex items-center gap-2"><i data-lucide="user" class="w-4 h-4 text-pi-400"></i>Penjual</h3>
       <div class="space-y-3">
         <input type="text" id="akta-penjual" placeholder="Nama penjual *" class="input-field w-full px-3 py-2.5 rounded-xl text-sm">
         <input type="text" id="akta-ktp-penjual" placeholder="No. KTP penjual *" class="input-field w-full px-3 py-2.5 rounded-xl text-sm">
-        <input type="text" id="akta-alamat-penjual" placeholder="Alamat penjual" class="input-field w-full px-3 py-2.5 rounded-xl text-sm">
       </div>
     </div>
     <div class="glass rounded-xl p-4">
@@ -472,7 +281,6 @@ body{font-family:'Inter',sans-serif;background:#050816;color:#e2e8f0;overflow-x:
       <div class="space-y-3">
         <input type="text" id="akta-pembeli" placeholder="Nama pembeli *" class="input-field w-full px-3 py-2.5 rounded-xl text-sm">
         <input type="text" id="akta-ktp-pembeli" placeholder="No. KTP pembeli *" class="input-field w-full px-3 py-2.5 rounded-xl text-sm">
-        <input type="text" id="akta-alamat-pembeli" placeholder="Alamat pembeli" class="input-field w-full px-3 py-2.5 rounded-xl text-sm">
       </div>
     </div>
     <div class="glass rounded-xl p-4">
@@ -482,42 +290,26 @@ body{font-family:'Inter',sans-serif;background:#050816;color:#e2e8f0;overflow-x:
         <input type="number" id="akta-harga-pi" placeholder="Harga dalam Pi (π) *" class="input-field w-full px-3 py-2.5 rounded-xl text-sm" step="0.01">
         <input type="date" id="akta-tanggal" class="input-field w-full px-3 py-2.5 rounded-xl text-sm">
         <select id="akta-pembayaran" class="input-field w-full px-3 py-2.5 rounded-xl text-sm">
-          <option value="">Metode pembayaran *</option>
           <option value="pi_network">Pi Network (π)</option>
           <option value="transfer">Transfer Bank</option>
           <option value="tunai">Tunai</option>
         </select>
-        <textarea id="akta-deskripsi" rows="2" placeholder="Deskripsi tambahan..." class="input-field w-full px-3 py-2.5 rounded-xl text-sm resize-none"></textarea>
-        <div class="input-field rounded-xl p-4 text-center cursor-pointer" onclick="document.getElementById('file-upload').click()">
-          <i data-lucide="upload-cloud" class="w-6 h-6 mx-auto text-slate-500 mb-1"></i>
-          <p class="text-[10px] text-slate-500">Upload dokumen (PDF/JPG)</p>
-          <input type="file" id="file-upload" class="hidden" accept=".pdf,.jpg,.png" onchange="handleFileUpload(this)">
-        </div>
       </div>
     </div>
     <button onclick="nextStep(2)" class="btn-pi w-full py-3.5 rounded-xl text-sm flex items-center justify-center gap-2">Lanjut <i data-lucide="arrow-right" class="w-4 h-4"></i></button>
   </div>
 
-  <!-- Step 2 -->
   <div id="step-2" class="step-content" style="display:none">
     <div class="space-y-4">
       <div class="glass rounded-xl p-4">
         <h3 class="text-sm font-semibold mb-1">Tanda Tangan Penjual</h3>
-        <p class="text-[10px] text-slate-500 mb-3">Gambar tanda tangan di bawah</p>
         <canvas id="signature-pad-1" class="sig-canvas w-full rounded-xl" height="150"></canvas>
-        <div class="flex gap-3 mt-2">
-          <button onclick="clearSignature('signature-pad-1')" class="text-[10px] text-slate-500 flex items-center gap-1"><i data-lucide="eraser" class="w-3 h-3"></i>Hapus</button>
-          <label class="text-[10px] text-pi-400 flex items-center gap-1 cursor-pointer"><i data-lucide="upload" class="w-3 h-3"></i>Upload<input type="file" class="hidden" accept="image/*" onchange="uploadSignature(this,'signature-pad-1')"></label>
-        </div>
+        <button onclick="clearSignature('signature-pad-1')" class="text-[10px] text-slate-500 flex items-center gap-1 mt-2"><i data-lucide="eraser" class="w-3 h-3"></i>Hapus</button>
       </div>
       <div class="glass rounded-xl p-4">
         <h3 class="text-sm font-semibold mb-1">Tanda Tangan Pembeli</h3>
-        <p class="text-[10px] text-slate-500 mb-3">Gambar tanda tangan di bawah</p>
         <canvas id="signature-pad-2" class="sig-canvas w-full rounded-xl" height="150"></canvas>
-        <div class="flex gap-3 mt-2">
-          <button onclick="clearSignature('signature-pad-2')" class="text-[10px] text-slate-500 flex items-center gap-1"><i data-lucide="eraser" class="w-3 h-3"></i>Hapus</button>
-          <label class="text-[10px] text-pi-400 flex items-center gap-1 cursor-pointer"><i data-lucide="upload" class="w-3 h-3"></i>Upload<input type="file" class="hidden" accept="image/*" onchange="uploadSignature(this,'signature-pad-2')"></label>
-        </div>
+        <button onclick="clearSignature('signature-pad-2')" class="text-[10px] text-slate-500 flex items-center gap-1 mt-2"><i data-lucide="eraser" class="w-3 h-3"></i>Hapus</button>
       </div>
       <div class="flex gap-3">
         <button onclick="nextStep(1)" class="btn-outline flex-1 py-3 rounded-xl text-sm">← Kembali</button>
@@ -526,7 +318,6 @@ body{font-family:'Inter',sans-serif;background:#050816;color:#e2e8f0;overflow-x:
     </div>
   </div>
 
-  <!-- Step 3 -->
   <div id="step-3" class="step-content" style="display:none">
     <div class="space-y-4">
       <div class="glass-pi rounded-xl p-4 text-center">
@@ -539,89 +330,15 @@ body{font-family:'Inter',sans-serif;background:#050816;color:#e2e8f0;overflow-x:
           <div><p class="text-slate-500">Pembeli</p><p class="font-medium mt-0.5" id="preview-pembeli">-</p></div>
           <div><p class="text-slate-500">Barang/Jasa</p><p class="font-medium mt-0.5" id="preview-barang">-</p></div>
           <div><p class="text-slate-500">Harga</p><p class="font-medium mt-0.5 text-pi-400" id="preview-harga">-</p></div>
-          <div><p class="text-slate-500">Tanggal</p><p class="font-medium mt-0.5" id="preview-tanggal">-</p></div>
-          <div><p class="text-slate-500">Pembayaran</p><p class="font-medium mt-0.5" id="preview-pembayaran">-</p></div>
-        </div>
-        <div id="preview-deskripsi-wrap" class="mt-3 pt-3 border-t border-white/5 hidden">
-          <p class="text-slate-500 text-[11px]">Deskripsi</p>
-          <p class="text-[11px] text-slate-300 mt-0.5" id="preview-deskripsi">-</p>
         </div>
       </div>
       <div class="flex items-start gap-2 p-3 rounded-xl bg-pi-500/5 border border-pi-500/15">
         <i data-lucide="circle-dollar-sign" class="w-4 h-4 text-pi-400 flex-shrink-0 mt-0.5"></i>
-        <p class="text-[10px] text-pi-300/80">Pastikan semua data benar. Anda akan melakukan pembayaran menggunakan Pi Network.</p>
+        <p class="text-[10px] text-pi-300/80">Anda akan melakukan pembayaran menggunakan Pi Network.</p>
       </div>
       <div class="flex gap-3">
         <button onclick="nextStep(2)" class="btn-outline flex-1 py-3 rounded-xl text-sm">← Kembali</button>
-        <button onclick="submitAkta()" class="btn-pi flex-1 py-3 rounded-xl text-sm flex items-center justify-center gap-1" id="btn-submit-akta"><i data-lucide="circle-dollar-sign" class="w-4 h-4"></i>Bayar & Buat Akta</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ===== Detail Akta ===== -->
-<div id="dash-detail-akta" class="dash-page p-4">
-  <div class="flex items-center gap-3 mb-5">
-    <button onclick="showDashboard('riwayat')" class="w-9 h-9 rounded-xl glass flex items-center justify-center active:bg-white/5"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
-    <div>
-      <h1 class="text-base font-bold">Detail Akta</h1>
-      <p class="text-[10px] font-mono text-slate-500">AKTA-2024-0891</p>
-    </div>
-  </div>
-
-  <div class="space-y-4">
-    <div class="glass rounded-xl p-4">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-sm font-semibold">Informasi Akta</h3>
-        <span class="badge-active text-[9px] px-2 py-0.5 rounded-full">Verified</span>
-      </div>
-      <div class="grid grid-cols-2 gap-3 text-[11px]">
-        <div><p class="text-slate-500">Penjual</p><p class="font-medium mt-0.5">Ahmad Rizky</p></div>
-        <div><p class="text-slate-500">Pembeli</p><p class="font-medium mt-0.5">Siti Nurhaliza</p></div>
-        <div><p class="text-slate-500">Barang</p><p class="font-medium mt-0.5">Honda Beat 2023</p></div>
-        <div><p class="text-slate-500">Harga</p><p class="font-medium mt-0.5 text-pi-400">5 π</p></div>
-        <div><p class="text-slate-500">Tanggal</p><p class="font-medium mt-0.5">15 Jun 2024</p></div>
-        <div><p class="text-slate-500">Pembayaran</p><p class="font-medium mt-0.5">Pi Network</p></div>
-      </div>
-    </div>
-
-    <div class="glass rounded-xl p-4">
-      <h3 class="text-sm font-semibold mb-3">Tanda Tangan</h3>
-      <div class="grid grid-cols-2 gap-3">
-        <div class="glass rounded-lg p-3 text-center">
-          <p class="text-[9px] text-slate-500 mb-1">Penjual</p>
-          <p class="text-lg italic text-pi-400/50 font-serif">Ahmad</p>
-        </div>
-        <div class="glass rounded-lg p-3 text-center">
-          <p class="text-[9px] text-slate-500 mb-1">Pembeli</p>
-          <p class="text-lg italic text-blue-500/50 font-serif">Siti</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="glass rounded-xl p-4 text-center">
-      <p class="text-[10px] text-slate-500 mb-3">QR Code Verifikasi</p>
-      <div class="w-28 h-28 mx-auto rounded-lg bg-white p-2 mb-2">
-        <div class="qr-pattern w-full h-full rounded"></div>
-      </div>
-      <p class="text-[9px] text-slate-500 font-mono">Scan untuk verifikasi</p>
-    </div>
-
-    <div class="glass rounded-xl p-4">
-      <h4 class="text-xs font-semibold mb-3">Status Verifikasi</h4>
-      <div class="space-y-2">
-        <div class="flex items-center gap-2"><div class="w-5 h-5 rounded-full bg-green-500/15 flex items-center justify-center"><i data-lucide="check" class="w-3 h-3 text-green-500"></i></div><span class="text-[11px]">Data lengkap</span></div>
-        <div class="flex items-center gap-2"><div class="w-5 h-5 rounded-full bg-green-500/15 flex items-center justify-center"><i data-lucide="check" class="w-3 h-3 text-green-500"></i></div><span class="text-[11px]">Tanda tangan verified</span></div>
-        <div class="flex items-center gap-2"><div class="w-5 h-5 rounded-full bg-green-500/15 flex items-center justify-center"><i data-lucide="check" class="w-3 h-3 text-green-500"></i></div><span class="text-[11px]">Pembayaran Pi sukses</span></div>
-        <div class="flex items-center gap-2"><div class="w-5 h-5 rounded-full bg-green-500/15 flex items-center justify-center"><i data-lucide="check" class="w-3 h-3 text-green-500"></i></div><span class="text-[11px]">Blockchain recorded</span></div>
-      </div>
-    </div>
-
-    <div class="space-y-2">
-      <button onclick="downloadPDF()" class="btn-pi w-full py-3 rounded-xl text-sm flex items-center justify-center gap-2"><i data-lucide="download" class="w-4 h-4"></i>Download PDF</button>
-      <div class="grid grid-cols-2 gap-2">
-        <button class="btn-outline py-2.5 rounded-xl text-xs flex items-center justify-center gap-1"><i data-lucide="share-2" class="w-3.5 h-3.5"></i>Bagikan</button>
-        <button class="btn-outline py-2.5 rounded-xl text-xs flex items-center justify-center gap-1"><i data-lucide="printer" class="w-3.5 h-3.5"></i>Cetak</button>
+        <button onclick="submitAkta()" class="btn-pi flex-1 py-3 rounded-xl text-sm flex items-center justify-center gap-1" id="btn-submit-akta"><i data-lucide="circle-dollar-sign" class="w-4 h-4"></i>Bayar & Buat</button>
       </div>
     </div>
   </div>
@@ -630,79 +347,20 @@ body{font-family:'Inter',sans-serif;background:#050816;color:#e2e8f0;overflow-x:
 <!-- ===== Riwayat ===== -->
 <div id="dash-riwayat" class="dash-page p-4">
   <div class="mb-5 flex items-center justify-between">
-    <div>
-      <h1 class="text-lg font-bold">Riwayat</h1>
-      <p class="text-[10px] text-slate-500">Semua akta Anda</p>
-    </div>
+    <div><h1 class="text-lg font-bold">Riwayat</h1><p class="text-[10px] text-slate-500">Semua akta Anda</p></div>
     <button onclick="showDashboard('buat-akta')" class="btn-pi px-3 py-2 rounded-lg text-[11px] flex items-center gap-1"><i data-lucide="plus" class="w-3.5 h-3.5"></i>Buat</button>
   </div>
-
-  <div class="relative mb-4">
-    <i data-lucide="search" class="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2"></i>
-    <input type="text" placeholder="Cari akta..." class="input-field pl-9 pr-4 py-2.5 rounded-xl text-sm w-full" id="riwayat-search" oninput="filterRiwayat(this.value)">
-  </div>
-
-  <div class="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
-    <button class="filter-btn active text-[10px] px-3 py-1.5 rounded-lg glass whitespace-nowrap text-pi-400 border-pi-500/30" onclick="filterStatus(this,'all')">Semua</button>
-    <button class="filter-btn text-[10px] px-3 py-1.5 rounded-lg glass whitespace-nowrap text-slate-400" onclick="filterStatus(this,'active')">Aktif</button>
-    <button class="filter-btn text-[10px] px-3 py-1.5 rounded-lg glass whitespace-nowrap text-slate-400" onclick="filterStatus(this,'pending')">Pending</button>
-    <button class="filter-btn text-[10px] px-3 py-1.5 rounded-lg glass whitespace-nowrap text-slate-400" onclick="filterStatus(this,'completed')">Selesai</button>
-  </div>
-
   <div class="space-y-3" id="riwayat-cards"></div>
-</div>
-
-<!-- ===== Verifikasi ===== -->
-<div id="dash-verifikasi" class="dash-page p-4">
-  <div class="mb-5">
-    <h1 class="text-lg font-bold">Verifikasi</h1>
-    <p class="text-[10px] text-slate-500">Cek keaslian dokumen akta</p>
-  </div>
-
-  <div class="glass rounded-2xl p-6 text-center">
-    <div class="w-14 h-14 mx-auto rounded-xl glass-pi flex items-center justify-center mb-4"><i data-lucide="scan-line" class="w-7 h-7 text-pi-400"></i></div>
-    <h2 class="text-base font-bold mb-1">Verifikasi Akta</h2>
-    <p class="text-[11px] text-slate-400 mb-5">Masukkan nomor akta untuk memeriksa keaslian</p>
-    <input type="text" id="verify-code" placeholder="AKTA-2024-XXXX" class="input-field w-full px-4 py-3 rounded-xl text-sm mb-3 font-mono">
-    <button onclick="verifyDocument()" class="btn-pi w-full py-3 rounded-xl text-sm flex items-center justify-center gap-2"><i data-lucide="search" class="w-4 h-4"></i>Cek Keaslian</button>
-    <div class="h-px bg-white/5 my-5"></div>
-    <button class="btn-outline px-4 py-2.5 rounded-xl text-xs inline-flex items-center gap-2"><i data-lucide="camera" class="w-3.5 h-3.5"></i>Scan QR Code</button>
-  </div>
-  <div id="verify-result" class="mt-4"></div>
 </div>
 
 <!-- ===== Profile ===== -->
 <div id="dash-profile" class="dash-page p-4">
-  <div class="mb-5">
-    <h1 class="text-lg font-bold">Profil</h1>
-    <p class="text-[10px] text-slate-500">Kelola akun Anda</p>
-  </div>
-
+  <div class="mb-5"><h1 class="text-lg font-bold">Profil</h1><p class="text-[10px] text-slate-500">Kelola akun Anda</p></div>
   <div class="glass rounded-xl p-5 text-center mb-5">
-    <div class="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-pi-500 to-pi-400 flex items-center justify-center text-white text-2xl font-bold mb-3" id="profile-avatar">AR</div>
-    <h3 class="text-base font-semibold" id="profile-name">Ahmad Rizky</h3>
-    <p class="text-[11px] text-slate-500" id="profile-username">@ahmad.rizky</p>
-    <div class="glass-pi rounded-lg px-3 py-1 mt-3 inline-block"><span class="text-[10px] text-pi-300 font-medium">✦ Pioneer Member</span></div>
+    <div class="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-pi-500 to-pi-400 flex items-center justify-center text-white text-2xl font-bold mb-3" id="profile-avatar">PI</div>
+    <h3 class="text-base font-semibold" id="profile-name">Pioneer</h3>
+    <p class="text-[11px] text-slate-500" id="profile-username">@username</p>
   </div>
-
-  <div class="glass rounded-xl p-4 mb-4">
-    <h3 class="text-sm font-semibold mb-4">Informasi Pi Network</h3>
-    <div class="space-y-3 text-[11px]">
-      <div class="flex items-center justify-between p-3 rounded-lg bg-white/[0.02]">
-        <span class="text-slate-400">Status</span>
-        <span class="text-green-500 font-medium">Terverifikasi</span>
-      </div>
-      <div class="flex items-center justify-between p-3 rounded-lg bg-white/[0.02]">
-        <span class="text-slate-400">Paket Langganan</span>
-        <span class="text-pi-400 font-medium">Professional</span>
-      </div>
-      <div class="flex items-center justify-between p-3 rounded-lg bg-white/[0.02]">
-        <span class="text-slate-400">Total Pembayaran Pi</span>
-        <span class="text-pi-400 font-medium">12.5 π</span>
-      </div>
-    </div>
-  </div>
-
   <button onclick="handleLogout()" class="w-full py-3 rounded-xl text-sm text-red-400 glass flex items-center justify-center gap-2 active:bg-red-500/10">
     <i data-lucide="log-out" class="w-4 h-4"></i>Keluar
   </button>
@@ -710,33 +368,19 @@ body{font-family:'Inter',sans-serif;background:#050816;color:#e2e8f0;overflow-x:
 
 </main>
 
-<!-- Bottom Navigation -->
 <nav class="fixed bottom-0 left-0 right-0 z-40 glass-strong border-t border-white/5 bottom-nav no-print">
-  <div class="grid grid-cols-5 max-w-lg mx-auto">
+  <div class="grid grid-cols-4 max-w-lg mx-auto">
     <button onclick="showDashboard('dashboard')" class="bottom-nav-item active flex flex-col items-center py-2 pt-3 gap-0.5" data-page="dashboard">
-      <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-      <span class="text-[9px]">Home</span>
-      <div class="nav-indicator mt-0.5"></div>
+      <i data-lucide="layout-dashboard" class="w-5 h-5"></i><span class="text-[9px]">Home</span><div class="nav-indicator mt-0.5"></div>
     </button>
     <button onclick="showDashboard('buat-akta')" class="bottom-nav-item flex flex-col items-center py-2 pt-3 gap-0.5 text-slate-500" data-page="buat-akta">
-      <i data-lucide="file-plus" class="w-5 h-5"></i>
-      <span class="text-[9px]">Buat</span>
-      <div class="nav-indicator mt-0.5"></div>
+      <i data-lucide="file-plus" class="w-5 h-5"></i><span class="text-[9px]">Buat</span><div class="nav-indicator mt-0.5"></div>
     </button>
     <button onclick="showDashboard('riwayat')" class="bottom-nav-item flex flex-col items-center py-2 pt-3 gap-0.5 text-slate-500" data-page="riwayat">
-      <i data-lucide="history" class="w-5 h-5"></i>
-      <span class="text-[9px]">Riwayat</span>
-      <div class="nav-indicator mt-0.5"></div>
-    </button>
-    <button onclick="showDashboard('verifikasi')" class="bottom-nav-item flex flex-col items-center py-2 pt-3 gap-0.5 text-slate-500" data-page="verifikasi">
-      <i data-lucide="scan-line" class="w-5 h-5"></i>
-      <span class="text-[9px]">Verify</span>
-      <div class="nav-indicator mt-0.5"></div>
+      <i data-lucide="history" class="w-5 h-5"></i><span class="text-[9px]">Riwayat</span><div class="nav-indicator mt-0.5"></div>
     </button>
     <button onclick="showDashboard('profile')" class="bottom-nav-item flex flex-col items-center py-2 pt-3 gap-0.5 text-slate-500" data-page="profile">
-      <i data-lucide="user" class="w-5 h-5"></i>
-      <span class="text-[9px]">Profil</span>
-      <div class="nav-indicator mt-0.5"></div>
+      <i data-lucide="user" class="w-5 h-5"></i><span class="text-[9px]">Profil</span><div class="nav-indicator mt-0.5"></div>
     </button>
   </div>
 </nav>
@@ -744,39 +388,39 @@ body{font-family:'Inter',sans-serif;background:#050816;color:#e2e8f0;overflow-x:
 </div>
 </div>
 
-<!-- ==================== JS ==================== -->
+<!-- ==================== JS LOGIC ==================== -->
 <script>
+// ================= KONFIGURASI SUPABASE =================
+// GANTI DENGAN KREDENSIAL SUPABASE ANDA!
+const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 const S={page:'landing',dash:'dashboard',step:1,loggedIn:false,user:null,piAuthResult:null,
-contracts:[
-  {id:'AKTA-2024-0891',penjual:'Ahmad Rizky',pembeli:'Siti Nurhaliza',barang:'Sepeda Motor Honda Beat',harga:'5 π',tanggal:'2024-06-15',status:'active',pembayaran:'Pi Network'},
-  {id:'AKTA-2024-0890',penjual:'Ahmad Rizky',pembeli:'Budi Santoso',barang:'Mobil Toyota Avanza',harga:'150 π',tanggal:'2024-06-14',status:'pending',pembayaran:'Pi Network'},
-  {id:'AKTA-2024-0889',penjual:'Dewi Lestari',pembeli:'Ahmad Rizky',barang:'Tanah 500m² Bintaro',harga:'750 π',tanggal:'2024-06-12',status:'completed',pembayaran:'Pi Network'},
-  {id:'AKTA-2024-0888',penjual:'Rudi Hermawan',pembeli:'Siti Nurhaliza',barang:'Rumah Type 45',harga:'1200 π',tanggal:'2024-06-10',status:'active',pembayaran:'Transfer Bank'},
-  {id:'AKTA-2024-0887',penjual:'Ahmad Rizky',pembeli:'Dewi Lestari',barang:'Laptop MacBook Pro',harga:'35 π',tanggal:'2024-06-08',status:'rejected',pembayaran:'Pi Network'},
-],sigPads:{}};
+contracts:[],sigPads:{}};
 
 const statusMap={active:{l:'Aktif',c:'badge-active'},pending:{l:'Pending',c:'badge-pending'},completed:{l:'Selesai',c:'badge-completed'},rejected:{l:'Ditolak',c:'badge-rejected'}};
 
 document.addEventListener('DOMContentLoaded',()=>{lucide.createIcons();createParticles();initFade();populateCards();setDefaultDate()});
 
-function createParticles(){const c=document.getElementById('particles');for(let i=0;i<15;i++){const p=document.createElement('div');p.className='particle';const s=Math.random()*2+1;p.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;background:${Math.random()>0.5?'rgba(109,40,217,0.3)':'rgba(59,130,246,0.2)'};animation-duration:${Math.random()*20+18}s;animation-delay:${Math.random()*8}s`;c.appendChild(p)}}
-
+function createParticles(){const c=document.getElementById('particles');for(let i=0;i<12;i++){const p=document.createElement('div');p.className='particle';const s=Math.random()*2+1;p.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;background:rgba(109,40,217,0.3);animation-duration:${Math.random()*20+18}s;animation-delay:${Math.random()*8}s`;c.appendChild(p)}}
 function initFade(){const o=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible')})},{threshold:0.1});document.querySelectorAll('.fade-up').forEach(el=>o.observe(el))}
 
-// ===== PI SDK AUTH & PAYMENT =====
+// ================= PI SDK AUTH & PAYMENT =================
+
 async function authenticatePi() {
   try {
     showToast('Meminta otentikasi Pi...','info');
-    const auth = await Pi.authenticate(
-      ["username", "payments"], // Permissions
-      onIncompletePaymentFound // Callback for incomplete payments
-    );
+    const auth = await Pi.authenticate(["username", "payments"], onIncompletePaymentFound);
+    
     S.piAuthResult = auth;
     S.loggedIn = true;
     S.user = {
+      uid: auth.user.uid,
       name: auth.user.username || 'Pioneer',
       username: auth.user.username
     };
+    
     showToast('Login Pi berhasil!','success');
     setTimeout(() => {
       document.getElementById('page-landing').classList.remove('active');
@@ -786,17 +430,23 @@ async function authenticatePi() {
     }, 400);
   } catch (err) {
     console.error("Pi Auth Error:", err);
-    showToast('Gagal login dengan Pi: ' + err.message, 'error');
+    showToast('Gagal login: ' + err.message, 'error');
   }
 }
 
-function onIncompletePaymentFound(payment) {
+async function onIncompletePaymentFound(payment) {
   console.log("Incomplete payment found:", payment);
   showToast('Menyelesaikan pembayaran tertunda...','warning');
-  // Di sini biasanya server backend akan memverifikasi pembayaran ini
+  if (payment.status === 'created' || payment.status === 'user_action_needed') {
+      await approvePayment(payment.identifier);
+  }
+  if (payment.transaction && payment.transaction.verifications) {
+      const txid = payment.transaction.verifications.transaction_hash;
+      await completePayment(payment.identifier, txid, 'INCOMPLETE-AKTA');
+  }
 }
 
-async function createPiPayment(amountPi, memo) {
+async function createPiPayment(amountPi, memo, aktaId) {
   if (!S.piAuthResult) {
     showToast('Silakan login terlebih dahulu','error');
     return null;
@@ -805,15 +455,13 @@ async function createPiPayment(amountPi, memo) {
     const payment = await Pi.createPayment({
       amount: amountPi,
       memo: memo,
-      metadata: { type: "akta_payment", timestamp: Date.now() }
+      metadata: { aktaId: aktaId }
     }, {
-      onReadyForServerApproval: function(payment) {
-        console.log("Ready for server approval", payment);
-        // Kirim payment ke backend API Anda untuk approval
+      onReadyForServerApproval: async function(paymentId) {
+        await approvePayment(paymentId);
       },
-      onReadyForServerCompletion: function(payment, txid) {
-        console.log("Ready for server completion", payment, txid);
-        // Kirim txid ke backend untuk verifikasi blockchain
+      onReadyForServerCompletion: async function(paymentId, txid) {
+        await completePayment(paymentId, txid, aktaId);
       },
       onCancel: function(paymentId) {
         showToast('Pembayaran dibatalkan','warning');
@@ -830,31 +478,55 @@ async function createPiPayment(amountPi, memo) {
   }
 }
 
-function updateUIWithUser() {
-  if(S.user) {
-    const initials = S.user.name.substring(0,2).toUpperCase();
-    const avatar = document.getElementById('avatar-initial');
-    const profileAvatar = document.getElementById('profile-avatar');
-    const profileName = document.getElementById('profile-name');
-    const profileUsername = document.getElementById('profile-username');
-    const dashName = document.getElementById('dash-user-name');
+// ================= SUPABASE BACKEND CALLS =================
 
-    if(avatar) avatar.textContent = initials;
-    if(profileAvatar) profileAvatar.textContent = initials;
-    if(profileName) profileName.textContent = S.user.name;
-    if(profileUsername) profileUsername.textContent = '@' + S.user.username;
-    if(dashName) dashName.textContent = S.user.name + ' 👋';
+async function approvePayment(paymentId) {
+  try {
+    const { data, error } = await supabaseClient.functions.invoke('approve-payment', {
+      body: { paymentId }
+    });
+    if (error) throw error;
+    console.log("Payment approved on server:", data);
+  } catch (err) {
+    console.error("Server Approval Error:", err);
+    showToast('Gagal approve di server','error');
   }
 }
 
-function showPage(p){document.querySelectorAll('.page').forEach(x=>{x.classList.remove('active');x.style.display='none'});const t=document.getElementById('page-'+p);if(t){t.style.display='block';requestAnimationFrame(()=>t.classList.add('active'))}S.page=p;window.scrollTo(0,0);if(['dashboard','buat-akta','detail-akta','riwayat','verifikasi','profile','admin'].includes(p)){const dl=document.getElementById('dashboard-layout');dl.style.display='block';requestAnimationFrame(()=>dl.classList.add('active'));showDashboard(p)}lucide.createIcons()}
+async function completePayment(paymentId, txid, aktaId) {
+  try {
+    const { data, error } = await supabaseClient.functions.invoke('complete-payment', {
+      body: { paymentId, txid, aktaId, userUid: S.user.uid }
+    });
+    if (error) throw error;
+    console.log("Payment completed on server:", data);
+  } catch (err) {
+    console.error("Server Completion Error:", err);
+    showToast('Gagal complete di server','error');
+  }
+}
+
+// ================= UI HELPER & LOGIC =================
+
+function updateUIWithUser() {
+  if(S.user) {
+    const initials = S.user.name.substring(0,2).toUpperCase();
+    document.getElementById('avatar-initial').textContent = initials;
+    document.getElementById('profile-avatar').textContent = initials;
+    document.getElementById('profile-name').textContent = S.user.name;
+    document.getElementById('profile-username').textContent = '@' + S.user.username;
+    document.getElementById('dash-user-name').textContent = S.user.name + ' 👋';
+  }
+}
+
+function showPage(p){document.querySelectorAll('.page').forEach(x=>{x.classList.remove('active');x.style.display='none'});const t=document.getElementById('page-'+p);if(t){t.style.display='block';requestAnimationFrame(()=>t.classList.add('active'))}S.page=p;window.scrollTo(0,0);if(['dashboard','buat-akta','riwayat','profile'].includes(p)){const dl=document.getElementById('dashboard-layout');dl.style.display='block';requestAnimationFrame(()=>dl.classList.add('active'));showDashboard(p)}lucide.createIcons()}
 
 function showDashboard(p){
   document.querySelectorAll('.dash-page').forEach(x=>x.style.display='none');
   const t=document.getElementById('dash-'+p);
   if(t){t.style.display='block';t.style.opacity='0';t.style.transform='translateY(8px)';requestAnimationFrame(()=>{t.style.transition='all 0.3s ease';t.style.opacity='1';t.style.transform='translateY(0)'})}
   document.querySelectorAll('.bottom-nav-item').forEach(b=>{b.classList.toggle('active',b.dataset.page===p);b.classList.toggle('text-slate-500',b.dataset.page!==p)});
-  const titles={dashboard:'Dashboard','buat-akta':'Buat Akta','detail-akta':'Detail Akta',riwayat:'Riwayat',verifikasi:'Verifikasi',profile:'Profil',admin:'Admin'};
+  const titles={dashboard:'Dashboard','buat-akta':'Buat Akta',riwayat:'Riwayat',profile:'Profil'};
   document.getElementById('dash-title').textContent=titles[p]||'Dashboard';
   S.dash=p;
   if(p==='buat-akta')setTimeout(()=>initSignaturePads(),150);
@@ -872,16 +544,18 @@ function showModal(c){const o=document.getElementById('modal-overlay'),b=documen
 function closeModal(){document.getElementById('modal-overlay').classList.remove('active')}
 document.getElementById('modal-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal()});
 
-function showNotifications(){showModal(`
-  <div class="p-6"><div class="flex items-center justify-between mb-5"><h3 class="text-base font-semibold">Notifikasi</h3><button onclick="closeModal()" class="text-slate-500 p-1"><i data-lucide="x" class="w-5 h-5"></i></button></div>
-  <div class="space-y-3">
-    <div class="flex items-start gap-2.5 p-3 rounded-xl bg-white/[0.02]"><div class="w-7 h-7 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0"><i data-lucide="check-circle" class="w-3.5 h-3.5 text-green-500"></i></div><div><p class="text-[11px]">Pembayaran Pi <span class="text-pi-400">#0891</span> sukses</p><p class="text-[9px] text-slate-500 mt-0.5">2 menit lalu</p></div></div>
-    <div class="flex items-start gap-2.5 p-3 rounded-xl bg-white/[0.02]"><div class="w-7 h-7 rounded-lg bg-yellow-500/10 flex items-center justify-center flex-shrink-0"><i data-lucide="circle-dollar-sign" class="w-3.5 h-3.5 text-yellow-500"></i></div><div><p class="text-[11px]">Menunggu pembayaran <span class="text-pi-400">#0890</span></p><p class="text-[9px] text-slate-500 mt-0.5">1 jam lalu</p></div></div>
-  </div></div>`)}
+function showNotifications(){showModal(`<div class="p-6"><div class="flex items-center justify-between mb-5"><h3 class="text-base font-semibold">Notifikasi</h3><button onclick="closeModal()" class="text-slate-500 p-1"><i data-lucide="x" class="w-5 h-5"></i></button></div><p class="text-xs text-slate-500">Belum ada notifikasi</p></div>`)}
 
 function nextStep(step){
   if(step===2&&S.step===1){const p=document.getElementById('akta-penjual').value,b=document.getElementById('akta-pembeli').value,br=document.getElementById('akta-barang').value,h=document.getElementById('akta-harga-pi').value;if(!p||!b||!br||!h){showToast('Lengkapi field wajib (*)','error');return}}
-  if(step===3){const n='AKTA-2024-'+String(Math.floor(Math.random()*9000)+1000);document.getElementById('preview-no-akta').textContent=n;document.getElementById('preview-penjual').textContent=document.getElementById('akta-penjual').value||'-';document.getElementById('preview-pembeli').textContent=document.getElementById('akta-pembeli').value||'-';document.getElementById('preview-barang').textContent=document.getElementById('akta-barang').value||'-';document.getElementById('preview-harga').textContent=document.getElementById('akta-harga-pi').value+' π'||'-';const d=document.getElementById('akta-tanggal').value;document.getElementById('preview-tanggal').textContent=d?new Date(d).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}):'-';const pm=document.getElementById('akta-pembayaran');document.getElementById('preview-pembayaran').textContent=pm.options[pm.selectedIndex]?.text||'-';const desc=document.getElementById('akta-deskripsi').value;if(desc){document.getElementById('preview-deskripsi-wrap').classList.remove('hidden');document.getElementById('preview-deskripsi').textContent=desc}else{document.getElementById('preview-deskripsi-wrap').classList.add('hidden')}}
+  if(step===3){
+    const n='AKTA-2024-'+String(Math.floor(Math.random()*9000)+1000);
+    document.getElementById('preview-no-akta').textContent=n;
+    document.getElementById('preview-penjual').textContent=document.getElementById('akta-penjual').value||'-';
+    document.getElementById('preview-pembeli').textContent=document.getElementById('akta-pembeli').value||'-';
+    document.getElementById('preview-barang').textContent=document.getElementById('akta-barang').value||'-';
+    document.getElementById('preview-harga').textContent=document.getElementById('akta-harga-pi').value+' π'||'-';
+  }
   document.querySelectorAll('.step-content').forEach(s=>s.style.display='none');const t=document.getElementById('step-'+step);if(t){t.style.display='block';t.style.opacity='0';t.style.transform='translateX(16px)';requestAnimationFrame(()=>{t.style.transition='all 0.3s ease';t.style.opacity='1';t.style.transform='translateX(0)'})}
   document.querySelectorAll('.step-dot').forEach(d=>{const s=parseInt(d.dataset.step);d.classList.toggle('active',s===step);d.classList.toggle('done',s<step);if(s<step)d.style.background='#22c55e';else if(s===step){d.style.background='#8B5CF6';d.style.transform='scale(1.2)'}else{d.style.background='rgba(255,255,255,0.1)';d.style.transform='scale(1)'}});
   S.step=step;if(step===2)setTimeout(()=>initSignaturePads(),150);document.getElementById('dashboard-content').scrollTo({top:0,behavior:'smooth'});
@@ -890,9 +564,6 @@ function nextStep(step){
 function initSignaturePads(){['signature-pad-1','signature-pad-2'].forEach(id=>{const c=document.getElementById(id);if(!c||S.sigPads[id])return;const ctx=c.getContext('2d');const rect=c.parentElement.getBoundingClientRect();c.width=rect.width-32;c.height=150;let drawing=false,lx=0,ly=0;function gp(e){const r=c.getBoundingClientRect();const cx=e.touches?e.touches[0].clientX:e.clientX;const cy=e.touches?e.touches[0].clientY:e.clientY;return{x:cx-r.left,y:cy-r.top}}function start(e){e.preventDefault();drawing=true;const p=gp(e);lx=p.x;ly=p.y}function draw(e){e.preventDefault();if(!drawing)return;const p=gp(e);ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(p.x,p.y);ctx.strokeStyle='#8B5CF6';ctx.lineWidth=2;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();lx=p.x;ly=p.y}function stop(){drawing=false}c.addEventListener('mousedown',start);c.addEventListener('mousemove',draw);c.addEventListener('mouseup',stop);c.addEventListener('mouseleave',stop);c.addEventListener('touchstart',start,{passive:false});c.addEventListener('touchmove',draw,{passive:false});c.addEventListener('touchend',stop);S.sigPads[id]=true})}
 
 function clearSignature(id){const c=document.getElementById(id);if(c)c.getContext('2d').clearRect(0,0,c.width,c.height)}
-function uploadSignature(input,id){const f=input.files[0];if(!f)return;const c=document.getElementById(id),ctx=c.getContext('2d'),img=new Image();img.onload=()=>{ctx.clearRect(0,0,c.width,c.height);ctx.drawImage(img,0,0,c.width,c.height)};img.src=URL.createObjectURL(f)}
-
-function handleFileUpload(i){if(i.files[0])showToast(`"${i.files[0].name}" diupload`,'success')}
 function setDefaultDate(){const d=document.getElementById('akta-tanggal');if(d)d.value=new Date().toISOString().split('T')[0]}
 
 async function submitAkta(){
@@ -903,8 +574,7 @@ async function submitAkta(){
   const piAmount = parseFloat(document.getElementById('akta-harga-pi').value) || 0;
   const aktaId = document.getElementById('preview-no-akta').textContent;
   
-  // Panggil Pi Payment API (Hanya bisa berjalan di dalam Pi Browser)
-  const payment = await createPiPayment(piAmount, `Pembayaran Akta ${aktaId}`);
+  const payment = await createPiPayment(piAmount, `Pembayaran Akta ${aktaId}`, aktaId);
 
   if (payment) {
     S.contracts.unshift({
@@ -918,14 +588,14 @@ async function submitAkta(){
       pembayaran: 'Pi Network'
     });
     populateCards();
-    btn.innerHTML='<i data-lucide="circle-dollar-sign" class="w-4 h-4"></i>Bayar & Buat Akta';
+    btn.innerHTML='<i data-lucide="circle-dollar-sign" class="w-4 h-4"></i>Bayar & Buat';
     btn.disabled=false;
     lucide.createIcons();
 
-    showModal(`<div class="p-8 text-center"><div class="w-16 h-16 mx-auto rounded-full bg-green-500/10 flex items-center justify-center mb-4"><i data-lucide="check-circle" class="w-8 h-8 text-green-500"></i></div><h2 class="text-lg font-bold mb-2">Pembayaran Diterima!</h2><p class="text-xs text-slate-400 mb-2">Nomor Akta:</p><p class="text-xl font-bold font-mono text-pi-400 mb-4">${aktaId}</p><p class="text-[11px] text-slate-400 mb-6">Pembayaran ${piAmount} π sedang diproses di blockchain</p><div class="flex gap-2"><button onclick="closeModal();showDashboard('detail-akta')" class="btn-pi flex-1 py-3 rounded-xl text-xs">Lihat Detail</button><button onclick="closeModal();showDashboard('dashboard')" class="btn-outline flex-1 py-3 rounded-xl text-xs">Dashboard</button></div></div>`);
+    showModal(`<div class="p-8 text-center"><div class="w-16 h-16 mx-auto rounded-full bg-green-500/10 flex items-center justify-center mb-4"><i data-lucide="check-circle" class="w-8 h-8 text-green-500"></i></div><h2 class="text-lg font-bold mb-2">Pembayaran Diterima!</h2><p class="text-xs text-slate-400 mb-2">Nomor Akta:</p><p class="text-xl font-bold font-mono text-pi-400 mb-4">${aktaId}</p><p class="text-[11px] text-slate-400 mb-6">Pembayaran ${piAmount} π sukses diproses</p><button onclick="closeModal();showDashboard('dashboard')" class="btn-pi w-full py-3 rounded-xl text-xs">Kembali ke Dashboard</button></div>`);
     showToast('Akta & Pembayaran Pi berhasil dibuat!','success');
   } else {
-    btn.innerHTML='<i data-lucide="circle-dollar-sign" class="w-4 h-4"></i>Bayar & Buat Akta';
+    btn.innerHTML='<i data-lucide="circle-dollar-sign" class="w-4 h-4"></i>Bayar & Buat';
     btn.disabled=false;
     lucide.createIcons();
   }
@@ -935,11 +605,11 @@ function populateCards(filter='all',search=''){
   const containers=['riwayat-cards','recent-contract-cards'];
   const filtered=S.contracts.filter(c=>{
     if(filter!=='all'&&c.status!==filter)return false;
-    if(search&&!c.id.toLowerCase().includes(search.toLowerCase())&&!c.penjual.toLowerCase().includes(search.toLowerCase())&&!c.pembeli.toLowerCase().includes(search.toLowerCase())&&!c.barang.toLowerCase().includes(search.toLowerCase()))return false;
+    if(search&&!c.id.toLowerCase().includes(search.toLowerCase())&&!c.barang.toLowerCase().includes(search.toLowerCase()))return false;
     return true;
   });
   const html=filtered.map(c=>{const s=statusMap[c.status]||statusMap.pending;const d=c.tanggal?new Date(c.tanggal).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}):'-';return`
-    <div class="contract-card glass rounded-xl p-4 cursor-pointer" onclick="showDashboard('detail-akta')">
+    <div class="contract-card glass rounded-xl p-4 cursor-pointer">
       <div class="flex items-center justify-between mb-2">
         <span class="font-mono text-[10px] text-pi-400">${c.id}</span>
         <span class="${s.c} text-[9px] px-2 py-0.5 rounded-full">${s.l}</span>
@@ -954,14 +624,6 @@ function populateCards(filter='all',search=''){
   containers.forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=html});
   lucide.createIcons();
 }
-
-function filterRiwayat(q){populateCards('all',q)}
-function filterStatus(btn,status){document.querySelectorAll('.filter-btn').forEach(b=>{b.classList.remove('active','text-pi-400','border-pi-500/30');b.classList.add('text-slate-400')});btn.classList.add('active','text-pi-400');btn.classList.remove('text-slate-400');populateCards(status)}
-
-function verifyDocument(){const code=document.getElementById('verify-code').value.trim();if(!code){showToast('Masukkan nomor akta','error');return}const r=document.getElementById('verify-result');r.innerHTML=`<div class="glass rounded-xl p-6 text-center"><div class="w-8 h-8 mx-auto border-2 border-pi-500/30 border-t-pi-500 rounded-full animate-spin mb-3"></div><p class="text-xs text-slate-400">Memverifikasi di Blockchain...</p></div>`;setTimeout(()=>{const c=S.contracts.find(x=>x.id===code);if(c){const s=statusMap[c.status];r.innerHTML=`<div class="glass rounded-xl p-5"><div class="flex items-center gap-3 mb-4"><div class="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center"><i data-lucide="shield-check" class="w-5 h-5 text-green-500"></i></div><div><h3 class="text-sm font-semibold text-green-500">Terverifikasi ✓</h3><p class="text-[10px] text-slate-400">Akta sah & terdaftar</p></div></div><div class="grid grid-cols-2 gap-2.5 text-[11px]"><div><p class="text-slate-500">No. Akta</p><p class="font-mono text-pi-400 mt-0.5">${c.id}</p></div><div><p class="text-slate-500">Status</p><p class="mt-0.5"><span class="${s.c} text-[9px] px-2 py-0.5 rounded-full">${s.l}</span></p></div><div><p class="text-slate-500">Penjual</p><p class="font-medium mt-0.5">${c.penjual}</p></div><div><p class="text-slate-500">Pembeli</p><p class="font-medium mt-0.5">${c.pembeli}</p></div><div><p class="text-slate-500">Barang</p><p class="font-medium mt-0.5">${c.barang}</p></div><div><p class="text-slate-500">Nilai</p><p class="font-medium mt-0.5 text-pi-400">${c.harga}</p></div></div></div>`}else{r.innerHTML=`<div class="glass rounded-xl p-5"><div class="flex items-center gap-3 mb-3"><div class="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center"><i data-lucide="x-circle" class="w-5 h-5 text-red-500"></i></div><div><h3 class="text-sm font-semibold text-red-500">Tidak Ditemukan</h3><p class="text-[10px] text-slate-400">"${code}" tidak terdaftar</p></div></div></div>`}lucide.createIcons()},1200)}
-
-function downloadPDF(){showToast('Menyiapkan PDF...','info');setTimeout(()=>showToast('PDF berhasil diunduh!','success'),1500)}
-function togglePassword(id){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password'}
 </script>
 </body>
 </html>
